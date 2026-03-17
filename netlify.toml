@@ -1,0 +1,4 @@
+[[redirects]]
+  from = "/"
+  to = "/checkbook.html"
+  status = 200
