@@ -291,8 +291,11 @@
 <div class="header">
   <div class="header-title">Family <span>Ledger</span></div>
   <div class="header-actions">
+    <div id="sync-indicator" style="font-size:12px;color:var(--text-muted);padding:7px 10px;display:flex;align-items:center;gap:5px;">
+      <span id="sync-dot" style="width:7px;height:7px;border-radius:50%;background:var(--text-muted);display:inline-block;"></span>
+      <span id="sync-label">Connecting...</span>
+    </div>
     <button class="icon-btn" onclick="confirmReset()" title="Reset all bills to unpaid">🔄 New Month</button>
-    <button class="icon-btn" onclick="openIO()">⇅ Sync</button>
   </div>
 </div>
 
@@ -435,26 +438,24 @@
   </div>
 </div>
 
-<!-- IO Modal -->
-<div class="modal-overlay" id="io-modal">
-  <div class="modal">
-    <div class="modal-title">⇅ Sync Data</div>
-    <div class="form-group">
-      <label class="form-label">Export — copy this and send to your partner</label>
-      <textarea class="io-textarea" id="export-data" readonly></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Import — paste data from your partner</label>
-      <textarea class="io-textarea" id="import-data" placeholder="Paste sync data here..."></textarea>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeIO()">Close</button>
-      <button class="btn btn-primary" onclick="importData()">Import & Apply</button>
-    </div>
-  </div>
-</div>
+<!-- Firebase Status Toast -->
+<div id="sync-toast" style="position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 16px;font-size:12px;color:var(--text-dim);z-index:300;display:none;white-space:nowrap;"></div>
 
-<script>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, onValue, set } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+// ── FIREBASE CONFIG ───────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey:            "AIzaSyAf_5LNs7mvCqsEKm40XocxCytzd1WZQ50",
+  authDomain:        "family-ledger-b0341.firebaseapp.com",
+  databaseURL:       "https://family-ledger-b0341-default-rtdb.firebaseio.com",
+  projectId:         "family-ledger-b0341",
+  storageBucket:     "family-ledger-b0341.firebasestorage.app",
+  messagingSenderId: "659065402079",
+  appId:             "1:659065402079:web:11138049cd1d79bee96f6a"
+};
+// ─────────────────────────────────────────────────────────────────────
 // ── DEFAULT BILLS (from spreadsheet) ──────────────────────────────────
 const DEFAULT_BILLS = [
   { name: 'Electric', amount: 150.00, due: 1 },
@@ -488,30 +489,85 @@ const DEFAULT_BILLS = [
 ];
 
 // ── STATE ──────────────────────────────────────────────────────────────
-function loadState() {
-  const raw = localStorage.getItem('ledger_v2');
-  if (raw) return JSON.parse(raw);
+const DEFAULT_STATE = () => {
   const now = new Date();
   return {
     balance: 2490.08,
-    transactions: [
-      { id: uid(), desc: 'City Bill', amount: 107.00, type: 'withdrawal', date: fmt(new Date()) },
-      { id: uid(), desc: 'Deposit 3/19', amount: 2529.00, type: 'deposit', date: fmt(new Date()) },
-      { id: uid(), desc: 'Guardian', amount: 315.00, type: 'withdrawal', date: fmt(new Date()) },
-      { id: uid(), desc: 'Capital One', amount: 230.00, type: 'withdrawal', date: fmt(new Date()) },
-    ],
+    transactions: [],
     bills: DEFAULT_BILLS.map(b => ({ ...b, id: uid(), paid: false })),
     lastMonth: now.getMonth(),
     lastYear: now.getFullYear(),
   };
-}
+};
 
-function saveState() { localStorage.setItem('ledger_v2', JSON.stringify(state)); }
+let state = DEFAULT_STATE();
+let dbRef = null;
+let isSaving = false;
+
 function uid() { return Math.random().toString(36).slice(2,10); }
 function fmt(d) { return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }); }
 function money(n) { return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
 
-let state = loadState();
+function setSyncStatus(status) {
+  const dot = document.getElementById('sync-dot');
+  const label = document.getElementById('sync-label');
+  if (status === 'live') {
+    dot.style.background = '#4fd1a5';
+    label.textContent = 'Live';
+  } else if (status === 'saving') {
+    dot.style.background = '#e8b84b';
+    label.textContent = 'Saving...';
+  } else {
+    dot.style.background = '#e05c5c';
+    label.textContent = 'Offline';
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('sync-toast');
+  t.textContent = msg; t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 2000);
+}
+
+// ── FIREBASE INIT ──────────────────────────────────────────────────────
+const notConfigured = firebaseConfig.apiKey === 'REPLACE_API_KEY';
+
+if (notConfigured) {
+  // Fallback to localStorage until Firebase is configured
+  const raw = localStorage.getItem('ledger_v2');
+  if (raw) state = JSON.parse(raw);
+  setSyncStatus('offline');
+  document.getElementById('sync-label').textContent = 'Local only';
+} else {
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+  dbRef     = ref(db, 'ledger');
+
+  // Listen for real-time changes from Firebase
+  onValue(dbRef, (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      state = data;
+    } else {
+      // First time — push defaults up
+      set(dbRef, state);
+    }
+    setSyncStatus('live');
+    render();
+  }, () => setSyncStatus('offline'));
+}
+
+function saveState() {
+  if (notConfigured) {
+    localStorage.setItem('ledger_v2', JSON.stringify(state));
+    return;
+  }
+  setSyncStatus('saving');
+  set(dbRef, state).then(() => {
+    setSyncStatus('live');
+    showToast('✓ Synced');
+  }).catch(() => setSyncStatus('offline'));
+}
 
 // ── MONTH RESET CHECK ──────────────────────────────────────────────────
 function confirmReset() { document.getElementById('reset-modal').classList.add('open'); }
@@ -624,26 +680,7 @@ function deleteTx(id) {
   render();
 }
 
-// ── IO ─────────────────────────────────────────────────────────────────
-function openIO() {
-  document.getElementById('export-data').value = JSON.stringify(state);
-  document.getElementById('import-data').value = '';
-  document.getElementById('io-modal').classList.add('open');
-}
-function closeIO() { document.getElementById('io-modal').classList.remove('open'); }
-function importData() {
-  try {
-    const raw = document.getElementById('import-data').value.trim();
-    if (!raw) return closeIO();
-    state = JSON.parse(raw);
-    saveState();
-    closeIO();
-    render();
-    alert('Data imported successfully!');
-  } catch(e) { alert('Invalid data — make sure you pasted the full export text.'); }
-}
-
-// ── RENDER ─────────────────────────────────────────────────────────────
+// ── MONTH RESET CHECK ──────────────────────────────────────────────────
 function render() {
   renderDashboard();
   renderBills();
@@ -932,10 +969,6 @@ document.getElementById('reset-modal').addEventListener('click', function(e) {
 document.getElementById('tx-modal').addEventListener('click', function(e) {
   if (e.target === this) closeTxModal();
 });
-document.getElementById('io-modal').addEventListener('click', function(e) {
-  if (e.target === this) closeIO();
-});
-
 // Enter key on tx form
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.getElementById('tx-modal').classList.contains('open')) saveTransaction();
