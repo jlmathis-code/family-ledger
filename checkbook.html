@@ -102,7 +102,48 @@
   .balance-amount.positive { color: var(--green); }
   .balance-amount.negative { color: var(--red); }
 
-  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  /* Paycheck inputs */
+  .paycheck-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .paycheck-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px;
+  }
+  .paycheck-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+  .paycheck-input {
+    width: 100%; background: var(--surface); border: 1px solid var(--border);
+    color: var(--green); padding: 8px 10px; border-radius: var(--radius-sm);
+    font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500;
+    outline: none; transition: border-color .2s;
+  }
+  .paycheck-input:focus { border-color: var(--green); }
+  .paycheck-input::placeholder { color: var(--text-muted); }
+
+  /* Safe to spend hero */
+  .safe-card {
+    background: linear-gradient(135deg, #0d2018 0%, #112a1e 100%);
+    border: 1px solid #1a4030; border-radius: var(--radius);
+    padding: 20px; margin-bottom: 16px; text-align: center;
+  }
+  .safe-label { font-size: 11px; color: #4fd1a580; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .safe-amount { font-family: 'DM Mono', monospace; font-size: 38px; font-weight: 500; line-height: 1; }
+  .safe-amount.positive { color: var(--green); }
+  .safe-amount.warn { color: var(--warning); }
+  .safe-amount.danger { color: var(--red); }
+  .safe-sublabel { font-size: 11px; color: #4fd1a550; margin-top: 6px; }
+  .safe-breakdown {
+    font-size: 12px; color: var(--text-muted); margin-bottom: 12px;
+    font-family: 'DM Mono', monospace; line-height: 1.8;
+  }
+  .safe-breakdown span.pos { color: var(--green); }
+  .safe-breakdown span.neg { color: var(--red); }
+
+  /* Add misc btn */
+  .add-misc-btn {
+    background: none; border: 1px solid var(--border); color: var(--text-muted);
+    border-radius: 20px; padding: 3px 12px; font-size: 12px; font-weight: 600;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .2s;
+  }
+  .add-misc-btn:hover { border-color: var(--accent); color: var(--accent); }
   .stat-card {
     background: var(--card); border: 1px solid var(--border);
     border-radius: var(--radius); padding: 16px;
@@ -313,6 +354,8 @@
 
 <!-- Pages -->
 <div id="page-dashboard" class="page active">
+
+  <!-- Balance Hero -->
   <div class="balance-hero">
     <div class="balance-label">Checking Balance</div>
     <div class="balance-amount" id="hero-balance">$0.00</div>
@@ -321,32 +364,59 @@
       <button class="balance-set-btn" onclick="setBalance()">Update</button>
     </div>
   </div>
+
+  <!-- Paycheck Inputs -->
+  <div class="paycheck-grid">
+    <div class="paycheck-card">
+      <div class="paycheck-label">💰 Josh's Check</div>
+      <div class="paycheck-input-row">
+        <input class="paycheck-input" id="josh-check" type="number" step="0.01" placeholder="0.00"
+          oninput="updatePaychecks()" value="">
+      </div>
+    </div>
+    <div class="paycheck-card">
+      <div class="paycheck-label">💰 Kristin's Check</div>
+      <div class="paycheck-input-row">
+        <input class="paycheck-input" id="kristin-check" type="number" step="0.01" placeholder="0.00"
+          oninput="updatePaychecks()" value="">
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Row -->
   <div class="stats-grid">
     <div class="stat-card">
-      <div class="stat-label">Bills Remaining</div>
+      <div class="stat-label">Bills This Period</div>
       <div class="stat-value danger" id="stat-bills-remaining">$0.00</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label" id="safe-label">Safe to Spend</div>
-      <div class="stat-value" id="stat-safe">$0.00</div>
-      <div style="font-size:11px;color:var(--text-muted);margin-top:5px" id="next-payday-label"></div>
+      <div class="stat-label">Misc Expenses</div>
+      <div class="stat-value danger" id="stat-misc">$0.00</div>
     </div>
   </div>
 
-  <div class="section-header">
-    <div class="section-title">Unpaid Bills</div>
-    <div class="section-badge warn" id="unpaid-count">0 left</div>
+  <!-- Safe to Spend -->
+  <div class="safe-card">
+    <div class="safe-breakdown" id="safe-breakdown"></div>
+    <div class="safe-label">Safe to Spend</div>
+    <div class="safe-amount" id="stat-safe">$0.00</div>
+    <div class="safe-sublabel" id="next-payday-label"></div>
   </div>
-  <div class="period-bar" id="dash-period-bar">
-    📅 Showing bills due before <span id="dash-period-label">—</span>
-    <button class="period-toggle active" id="dash-period-toggle" onclick="toggleDashPeriod()">This Period</button>
+
+  <!-- Bills This Period -->
+  <div class="section-header">
+    <div class="section-title">Bills This Period</div>
+    <div class="section-badge warn" id="unpaid-count">0 left</div>
   </div>
   <div id="dashboard-bills-list"></div>
 
+  <!-- Misc Transactions -->
   <div class="section-header">
-    <div class="section-title">Recent Transactions</div>
+    <div class="section-title">Misc Expenses</div>
+    <button class="add-misc-btn" onclick="openTxModal()">+ Add</button>
   </div>
   <div id="dashboard-tx-list"></div>
+
 </div>
 
 <div id="page-bills" class="page">
@@ -415,17 +485,10 @@
 <!-- Transaction Modal -->
 <div class="modal-overlay" id="tx-modal">
   <div class="modal">
-    <div class="modal-title">Add Transaction</div>
-    <div class="form-group">
-      <label class="form-label">Type</label>
-      <div class="type-toggle">
-        <button class="type-btn active-withdrawal" id="type-withdrawal" onclick="setType('withdrawal')">− Withdrawal</button>
-        <button class="type-btn" id="type-deposit" onclick="setType('deposit')">+ Deposit</button>
-      </div>
-    </div>
+    <div class="modal-title">Add Misc Expense</div>
     <div class="form-group">
       <label class="form-label">Description</label>
-      <input class="form-input" id="tx-desc" placeholder="e.g. Walmart groceries">
+      <input class="form-input" id="tx-desc" placeholder="e.g. Gas, groceries...">
     </div>
     <div class="form-group">
       <label class="form-label">Amount</label>
@@ -493,7 +556,9 @@ const DEFAULT_BILLS = [
 const DEFAULT_STATE = () => {
   const now = new Date();
   return {
-    balance: 2490.08,
+    balance: 0,
+    joshCheck: 0,
+    kristinCheck: 0,
     transactions: [],
     bills: DEFAULT_BILLS.map(b => ({ ...b, id: uid(), paid: false })),
     lastMonth: now.getMonth(),
@@ -548,8 +613,10 @@ if (notConfigured) {
     if (data) {
       state = {
         ...data,
-        bills: data.bills || [],
-        transactions: data.transactions || [],
+        bills:         data.bills        || [],
+        transactions:  data.transactions || [],
+        joshCheck:     data.joshCheck    || 0,
+        kristinCheck:  data.kristinCheck || 0,
       };
     } else {
       dbRef.set(state);
@@ -631,12 +698,10 @@ function setType(t) {
 }
 function saveTransaction() {
   const desc = document.getElementById('tx-desc').value.trim();
-  const amt = parseFloat(document.getElementById('tx-amount').value);
+  const amt  = parseFloat(document.getElementById('tx-amount').value);
   if (!desc || isNaN(amt) || amt <= 0) return;
-  const tx = { id: uid(), desc, amount: amt, type: currentType, date: fmt(new Date()) };
+  const tx = { id: uid(), desc, amount: amt, date: fmt(new Date()) };
   state.transactions.unshift(tx);
-  if (currentType === 'withdrawal') state.balance -= amt;
-  else state.balance += amt;
   saveState();
   closeTxModal();
   render();
@@ -673,10 +738,6 @@ function addBill() {
   render();
 }
 function deleteTx(id) {
-  const tx = state.transactions.find(t => t.id === id);
-  if (!tx) return;
-  if (tx.type === 'withdrawal') state.balance += tx.amount;
-  else state.balance -= tx.amount;
   state.transactions = state.transactions.filter(t => t.id !== id);
   saveState();
   render();
@@ -719,17 +780,82 @@ function getNextPayday() {
   return k < j ? { date: k, who: 'Kristin' } : { date: j, who: 'Josh' };
 }
 
-// ── FILTER STATE ───────────────────────────────────────────────────────
-let dashPeriodOnly = true;
-let billsPeriodOnly = true;
-
-function toggleDashPeriod() {
-  dashPeriodOnly = !dashPeriodOnly;
-  const btn = document.getElementById('dash-period-toggle');
-  btn.classList.toggle('active', dashPeriodOnly);
-  btn.textContent = dashPeriodOnly ? 'This Period' : 'All Bills';
+function updatePaychecks() {
+  state.joshCheck    = parseFloat(document.getElementById('josh-check').value)    || 0;
+  state.kristinCheck = parseFloat(document.getElementById('kristin-check').value) || 0;
+  saveState();
   renderDashboard();
 }
+
+function renderDashboard() {
+  const nextPay    = getNextPayday();
+  const payDateStr = nextPay.date.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  const today      = new Date();
+
+  // Bills due in current period (today → next payday)
+  const periodBills = (state.bills || []).filter(b => {
+    if (b.paid) return false;
+    if (!b.due) return true;
+    if (nextPay.date.getMonth() === today.getMonth() && nextPay.date.getFullYear() === today.getFullYear()) {
+      return b.due >= today.getDate() && b.due <= nextPay.date.getDate();
+    }
+    return true;
+  });
+
+  const billsTotal = periodBills.reduce((s,b) => s + b.amount, 0);
+  const miscTotal  = (state.transactions || []).reduce((s,t) => s + t.amount, 0);
+  const josh       = state.joshCheck    || 0;
+  const kristin    = state.kristinCheck || 0;
+  const safe       = state.balance + josh + kristin - billsTotal - miscTotal;
+
+  // Hero balance
+  const heroEl = document.getElementById('hero-balance');
+  heroEl.textContent  = money(state.balance);
+  heroEl.className    = 'balance-amount ' + (state.balance >= 0 ? 'positive' : 'negative');
+
+  // Paycheck inputs (restore saved values)
+  if (josh)    document.getElementById('josh-check').value    = josh;
+  if (kristin) document.getElementById('kristin-check').value = kristin;
+
+  // Stats
+  document.getElementById('stat-bills-remaining').textContent = money(billsTotal);
+  document.getElementById('stat-misc').textContent            = money(miscTotal);
+
+  // Safe to spend
+  const safeEl = document.getElementById('stat-safe');
+  safeEl.textContent = (safe < 0 ? '-' : '') + money(safe);
+  safeEl.className   = 'safe-amount ' + (safe > 500 ? 'positive' : safe > 0 ? 'warn' : 'danger');
+  document.getElementById('next-payday-label').textContent = `until ${nextPay.who}'s payday (${payDateStr})`;
+
+  // Breakdown
+  const bd = document.getElementById('safe-breakdown');
+  bd.innerHTML = `
+    <span class="pos">+${money(state.balance)}</span> balance
+    ${josh    ? `&nbsp;+&nbsp;<span class="pos">${money(josh)}</span> Josh`    : ''}
+    ${kristin ? `&nbsp;+&nbsp;<span class="pos">${money(kristin)}</span> Kristin` : ''}
+    ${billsTotal ? `&nbsp;−&nbsp;<span class="neg">${money(billsTotal)}</span> bills` : ''}
+    ${miscTotal  ? `&nbsp;−&nbsp;<span class="neg">${money(miscTotal)}</span> misc`   : ''}
+  `;
+
+  // Unpaid count badge
+  document.getElementById('unpaid-count').textContent = periodBills.length + ' left';
+
+  // Bills list
+  const billList = document.getElementById('dashboard-bills-list');
+  if (periodBills.length === 0) {
+    billList.innerHTML = '<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">No bills due this period!</div></div>';
+  } else {
+    billList.innerHTML = periodBills.map(b => billHTML(b, false)).join('');
+  }
+
+  // Misc transactions list
+  const txList = document.getElementById('dashboard-tx-list');
+  const txs = (state.transactions || []);
+  txList.innerHTML = txs.length ? txs.map(t => txHTML(t)).join('') :
+    '<div class="empty"><div class="empty-icon">📒</div><div class="empty-text">No misc expenses yet.</div></div>';
+}
+
+let billsPeriodOnly = true;
 function toggleBillsPeriod() {
   billsPeriodOnly = !billsPeriodOnly;
   const btn = document.getElementById('bills-period-toggle');
@@ -738,79 +864,29 @@ function toggleBillsPeriod() {
   renderBills();
 }
 
-function getBillsForPeriod(bills, periodOnly) {
-  if (!periodOnly) return bills;
-  const nextPay = getNextPayday();
-  const today = new Date();
-  return bills.filter(b => {
-    if (!b.due) return true;
-    if (nextPay.date.getMonth() === today.getMonth() && nextPay.date.getFullYear() === today.getFullYear()) {
-      return b.due <= nextPay.date.getDate();
-    }
-    return true;
-  });
-}
-
-function renderDashboard() {
-  const unpaidBills = (state.bills || []).filter(b => !b.paid);
-  const remaining = unpaidBills.reduce((s,b) => s + b.amount, 0);
-
-  const nextPay = getNextPayday();
-  const payDateStr = nextPay.date.toLocaleDateString('en-US', { month:'short', day:'numeric' });
-
-  const billsBeforePayday = getBillsForPeriod(unpaidBills, true);
-  const outBeforePayday = billsBeforePayday.reduce((s,b) => s + b.amount, 0);
-  const safe = state.balance - outBeforePayday;
-
-  const heroEl = document.getElementById('hero-balance');
-  heroEl.textContent = money(state.balance);
-  heroEl.className = 'balance-amount ' + (state.balance >= 0 ? 'positive' : 'negative');
-
-  document.getElementById('stat-bills-remaining').textContent = money(remaining);
-  const safeEl = document.getElementById('stat-safe');
-  safeEl.textContent = (safe < 0 ? '-' : '') + money(safe);
-  safeEl.className = 'stat-value ' + (safe > 500 ? 'safe' : safe > 0 ? 'warn' : 'danger');
-  document.getElementById('next-payday-label').textContent = `until ${nextPay.who}'s payday (${payDateStr})`;
-
-  // Update period bar label
-  document.getElementById('dash-period-label').textContent = `${nextPay.who}'s payday (${payDateStr})`;
-
-  const displayBills = getBillsForPeriod(unpaidBills, dashPeriodOnly);
-  document.getElementById('unpaid-count').textContent = displayBills.length + ' left';
-
-  const billList = document.getElementById('dashboard-bills-list');
-  if (displayBills.length === 0 && unpaidBills.length === 0) {
-    billList.innerHTML = '<div class="empty"><div class="empty-icon">🎉</div><div class="empty-text">All bills paid this month!</div></div>';
-  } else if (displayBills.length === 0) {
-    billList.innerHTML = '<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">No bills due before next payday!</div></div>';
-  } else {
-    billList.innerHTML = displayBills.map(b => billHTML(b, false)).join('');
-  }
-
-  const txList = document.getElementById('dashboard-tx-list');
-  const recent = (state.transactions || []).slice(0,5);
-  txList.innerHTML = recent.length ? recent.map(t => txHTML(t)).join('') :
-    '<div class="empty"><div class="empty-icon">📒</div><div class="empty-text">No transactions yet.</div></div>';
-}
-
 function renderBills() {
   const now = new Date();
   document.getElementById('bills-month-label').textContent =
     now.toLocaleDateString('en-US', { month:'long', year:'numeric' }).toUpperCase();
   checkMonthReset();
 
-  const nextPay = getNextPayday();
+  const nextPay    = getNextPayday();
   const payDateStr = nextPay.date.toLocaleDateString('en-US', { month:'short', day:'numeric' });
   document.getElementById('bills-period-label').textContent = `${nextPay.who}'s payday (${payDateStr})`;
 
-  // Respect manual order (state.bills order), then filter
-  const displayBills = billsPeriodOnly
-    ? getBillsForPeriod(state.bills || [], true)
-    : [...(state.bills || [])];
+  let display = [...(state.bills || [])];
+  if (billsPeriodOnly) {
+    display = display.filter(b => {
+      if (!b.due) return true;
+      if (nextPay.date.getMonth() === now.getMonth() && nextPay.date.getFullYear() === now.getFullYear()) {
+        return b.due >= now.getDate() && b.due <= nextPay.date.getDate();
+      }
+      return true;
+    });
+  }
 
-  // Unpaid first, paid last — within each group preserve manual order
-  const unpaid = displayBills.filter(b => !b.paid);
-  const paid   = displayBills.filter(b => b.paid);
+  const unpaid = display.filter(b => !b.paid);
+  const paid   = display.filter(b => b.paid);
   const sorted = [...unpaid, ...paid];
 
   const container = document.getElementById('bills-list');
@@ -921,15 +997,17 @@ function onTouchEnd(e) {
 }
 
 function renderCheckbook() {
-  document.getElementById('tx-balance-label').textContent = money(state.balance);
-  const list = document.getElementById('tx-list');
+  const txs = (state.transactions || []);
+  const total = txs.reduce((s,t) => s + t.amount, 0);
+  document.getElementById('tx-balance-label').textContent = txs.length ? '−' + money(total) : '';
+  const list  = document.getElementById('tx-list');
   const empty = document.getElementById('tx-empty');
-  if ((state.transactions || []).length === 0) {
+  if (txs.length === 0) {
     list.innerHTML = '';
     empty.style.display = 'block';
   } else {
     empty.style.display = 'none';
-    list.innerHTML = state.transactions.map(t => txHTML(t)).join('');
+    list.innerHTML = txs.map(t => txHTML(t)).join('');
   }
 }
 
@@ -947,14 +1025,13 @@ function billHTML(b, showDelete=false, showDrag=false) {
 }
 
 function txHTML(t) {
-  const sign = t.type === 'withdrawal' ? '−' : '+';
   return `<div class="tx-item">
-    <div class="tx-dot ${t.type}"></div>
+    <div class="tx-dot withdrawal"></div>
     <div class="tx-info">
       <div class="tx-desc">${t.desc}</div>
       <div class="tx-date">${t.date}</div>
     </div>
-    <div class="tx-amount ${t.type}">${sign}${money(t.amount)}</div>
+    <div class="tx-amount withdrawal">−${money(t.amount)}</div>
     <button class="tx-delete" onclick="deleteTx('${t.id}')">✕</button>
   </div>`;
 }
@@ -974,6 +1051,14 @@ document.getElementById('tx-modal').addEventListener('click', function(e) {
 // Enter key on tx form
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.getElementById('tx-modal').classList.contains('open')) saveTransaction();
+});
+
+// ── EXPOSE FUNCTIONS TO GLOBAL SCOPE ──────────────────────────────────
+Object.assign(window, {
+  showPage, openTxModal, closeTxModal, saveTransaction,
+  toggleBill, deleteBill, toggleAddBill, addBill, deleteTx,
+  setBalance, confirmReset, closeResetModal, doReset,
+  toggleBillsPeriod, updatePaychecks,
 });
 
 render();
