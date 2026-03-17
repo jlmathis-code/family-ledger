@@ -547,7 +547,12 @@ if (notConfigured) {
   onValue(dbRef, (snapshot) => {
     const data = snapshot.val();
     if (data) {
-      state = data;
+      // Ensure arrays exist even if Firebase omitted empty ones
+      state = {
+        ...data,
+        bills: data.bills || [],
+        transactions: data.transactions || [],
+      };
     } else {
       // First time — push defaults up
       set(dbRef, state);
@@ -750,7 +755,7 @@ function getBillsForPeriod(bills, periodOnly) {
 }
 
 function renderDashboard() {
-  const unpaidBills = state.bills.filter(b => !b.paid);
+  const unpaidBills = (state.bills || []).filter(b => !b.paid);
   const remaining = unpaidBills.reduce((s,b) => s + b.amount, 0);
 
   const nextPay = getNextPayday();
@@ -786,7 +791,7 @@ function renderDashboard() {
   }
 
   const txList = document.getElementById('dashboard-tx-list');
-  const recent = state.transactions.slice(0,5);
+  const recent = (state.transactions || []).slice(0,5);
   txList.innerHTML = recent.length ? recent.map(t => txHTML(t)).join('') :
     '<div class="empty"><div class="empty-icon">📒</div><div class="empty-text">No transactions yet.</div></div>';
 }
@@ -803,8 +808,8 @@ function renderBills() {
 
   // Respect manual order (state.bills order), then filter
   const displayBills = billsPeriodOnly
-    ? getBillsForPeriod(state.bills, true)
-    : [...state.bills];
+    ? getBillsForPeriod(state.bills || [], true)
+    : [...(state.bills || [])];
 
   // Unpaid first, paid last — within each group preserve manual order
   const unpaid = displayBills.filter(b => !b.paid);
@@ -922,7 +927,7 @@ function renderCheckbook() {
   document.getElementById('tx-balance-label').textContent = money(state.balance);
   const list = document.getElementById('tx-list');
   const empty = document.getElementById('tx-empty');
-  if (state.transactions.length === 0) {
+  if ((state.transactions || []).length === 0) {
     list.innerHTML = '';
     empty.style.display = 'block';
   } else {
