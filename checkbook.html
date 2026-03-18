@@ -105,19 +105,22 @@
   .balance-set-btn:hover { background: #3a9e4a; }
 
   /* Period switcher */
-  .period-switcher { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-  .period-switch-btn {
-    background: var(--card); border: 2px solid var(--border);
-    border-radius: var(--radius); padding: 12px; cursor: pointer;
-    display: flex; flex-direction: column; align-items: center; gap: 3px;
-    transition: all .2s; font-family: 'DM Sans', sans-serif;
-    box-shadow: var(--shadow);
+  .period-switcher {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 12px 16px; box-shadow: var(--shadow);
   }
-  .period-switch-btn.active { border-color: var(--accent); background: var(--accent-dim); }
-  .period-switch-btn.soon { border-color: var(--warning); background: #fff8f0; }
-  .period-switch-btn.soon .psb-who { color: var(--warning); }
-  .psb-who { font-size: 13px; font-weight: 600; color: var(--text-dim); }
-  .period-switch-btn.active .psb-who { color: var(--accent); }
+  .period-switch-btn {
+    background: var(--accent-dim); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 6px 14px; cursor: pointer;
+    font-size: 20px; color: var(--accent); font-weight: 700;
+    transition: all .2s; line-height: 1; flex-shrink: 0;
+  }
+  .period-switch-btn:hover { background: var(--accent); color: #fff; }
+  .period-active-label {
+    flex: 1; text-align: center; display: flex; flex-direction: column; gap: 2px;
+  }
+  .psb-who { font-size: 14px; font-weight: 700; color: var(--accent); }
   .psb-date { font-size: 12px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
 
   /* Paycheck card */
@@ -444,14 +447,12 @@
 
   <!-- Period Toggle -->
   <div class="period-switcher">
-    <button class="period-switch-btn active" id="period-btn-0" onclick="switchPeriod(0)">
+    <button class="period-switch-btn" id="period-prev" onclick="shiftPeriod(-1)">‹</button>
+    <div class="period-active-label">
       <span class="psb-who" id="period-who-0">—</span>
       <span class="psb-date" id="period-date-0">—</span>
-    </button>
-    <button class="period-switch-btn" id="period-btn-1" onclick="switchPeriod(1)">
-      <span class="psb-who" id="period-who-1">—</span>
-      <span class="psb-date" id="period-date-1">—</span>
-    </button>
+    </div>
+    <button class="period-switch-btn" id="period-next" onclick="shiftPeriod(1)">›</button>
   </div>
 
   <!-- Paycheck Input for active period -->
@@ -498,7 +499,6 @@
   <!-- Misc Transactions -->
   <div class="section-header">
     <div class="section-title">Misc Expenses</div>
-    <button class="add-misc-btn" onclick="openTxModal()">+ Add</button>
   </div>
   <div id="dashboard-tx-list"></div>
 
@@ -650,6 +650,7 @@ const DEFAULT_STATE = () => {
     balance: 0,
     joshCheck: 0,
     kristinCheck: 0,
+    disabilityCheck: 0,
     transactions: [],
     bills: DEFAULT_BILLS.map(b => ({ ...b, id: uid(), paid: false })),
     lastMonth: now.getMonth(),
@@ -706,8 +707,9 @@ if (notConfigured) {
         ...data,
         bills:         data.bills        || [],
         transactions:  data.transactions || [],
-        joshCheck:     data.joshCheck    || 0,
-        kristinCheck:  data.kristinCheck || 0,
+        joshCheck:       data.joshCheck       || 0,
+        kristinCheck:    data.kristinCheck    || 0,
+        disabilityCheck: data.disabilityCheck || 0,
       };
     } else {
       dbRef.set(state);
@@ -843,8 +845,11 @@ function render() {
   renderCheckbook();
 }
 
-// ── PAYDAY LOGIC ───────────────────────────────────────────────────────
-const KRISTIN_ANCHOR = new Date(2026, 2, 26); // Mar 26 2026
+// ── 4-PAYDAY ROLLING CYCLE ─────────────────────────────────────────────
+// Josh: 5th and 20th every month
+// Kristin: biweekly from Mar 26 2026
+// Disability: 1st every month
+const KRISTIN_ANCHOR = new Date(2026, 2, 26);
 const BIWEEKLY_MS    = 14 * 24 * 60 * 60 * 1000;
 
 function nextKristinPayday(from) {
@@ -853,31 +858,57 @@ function nextKristinPayday(from) {
   while (new Date(d.getTime() - BIWEEKLY_MS) > from) d = new Date(d.getTime() - BIWEEKLY_MS);
   return d;
 }
-function nextJoshPayday(from) {
-  const m = from.getMonth(), y = from.getFullYear();
-  const candidates = [new Date(y,m,5), new Date(y,m,20), new Date(y,m+1,5)].filter(d => d > from);
-  return candidates.sort((a,b) => a-b)[0];
+
+// Returns the next N paydays after `from` across all 4 sources, sorted ascending
+function getPayCycle(from, count = 6) {
+  const results = [];
+  let cursor = new Date(from);
+  // generate enough candidates to cover `count` paydays
+  for (let m = 0; m < 4; m++) {
+    const y = cursor.getFullYear(), mo = cursor.getMonth();
+    // Josh: 5th and 20th
+    [5, 20].forEach(d => {
+      const dt = new Date(y, mo, d);
+      if (dt > from) results.push({ date: dt, who: 'Josh', checkKey: 'joshCheck' });
+    });
+    // Disability: 1st
+    const dis = new Date(y, mo, 1);
+    if (dis > from) results.push({ date: dis, who: 'Disability', checkKey: 'disabilityCheck' });
+    // Kristin biweekly
+    const kd = nextKristinPayday(new Date(y, mo, 0)); // seed from prev month end
+    // add all kristin paydays in range
+    let kc = new Date(KRISTIN_ANCHOR);
+    while (kc <= from) kc = new Date(kc.getTime() + BIWEEKLY_MS);
+    for (let i = 0; i < 3; i++) {
+      if (kc.getFullYear() === y || kc.getFullYear() === y + 1) {
+        results.push({ date: new Date(kc), who: 'Kristin', checkKey: 'kristinCheck' });
+      }
+      kc = new Date(kc.getTime() + BIWEEKLY_MS);
+    }
+    cursor = new Date(y, mo + 1, 1);
+  }
+  // dedupe by date string, sort, slice
+  const seen = new Set();
+  return results
+    .filter(p => { const k = p.date.toDateString(); if (seen.has(k)) return false; seen.add(k); return p.date > from; })
+    .sort((a, b) => a.date - b.date)
+    .slice(0, count);
 }
-function getNextTwoPaydays() {
-  const now = new Date();
-  const k = { date: nextKristinPayday(now), who: 'Kristin', checkKey: 'kristinCheck' };
-  const j = { date: nextJoshPayday(now),    who: 'Josh',    checkKey: 'joshCheck'    };
-  return [k,j].sort((a,b) => a.date - b.date);
-}
+
 // keep for renderBills compat
-function getNextPayday() {
-  return getNextTwoPaydays()[0];
-}
+function getNextPayday() { return getPayCycle(new Date(), 1)[0]; }
+function getNextTwoPaydays() { return getPayCycle(new Date(), 2); }
 
 // ── PERIOD SWITCHING ───────────────────────────────────────────────────
 let activePeriod = 0;
-let userPickedPeriod = false;
 
-function switchPeriod(idx) {
-  activePeriod = idx;
-  userPickedPeriod = true;
+function shiftPeriod(dir) {
+  const cycle = getPayCycle(new Date(), 6);
+  activePeriod = Math.max(0, Math.min(cycle.length - 2, activePeriod + dir));
   renderDashboard();
 }
+// legacy compat
+function switchPeriod(idx) { activePeriod = idx; renderDashboard(); }
 
 // ── BILL DATE OVERRIDES ────────────────────────────────────────────────
 let overrideBillId = null;
@@ -912,140 +943,151 @@ function effectiveDue(bill) {
 
 // ── PAYCHECK INPUT ─────────────────────────────────────────────────────
 function updateActiveCheck() {
-  const paydays = getNextTwoPaydays();
-  const key = paydays[activePeriod].checkKey;
-  state[key] = parseFloat(document.getElementById('active-check').value) || 0;
+  const cycle = getPayCycle(new Date(), 6);
+  const key   = cycle[activePeriod].checkKey;
+  state[key]  = parseFloat(document.getElementById('active-check').value) || 0;
   saveState(); renderDashboard();
 }
 function updatePaychecks() { updateActiveCheck(); }
 
 function renderDashboard() {
-  const today   = new Date();
-  const todayDay = today.getDate();
-  const paydays  = getNextTwoPaydays();
-  const oneDay   = 24 * 60 * 60 * 1000;
-  const pay1     = paydays[0]; // soonest payday (e.g. Josh Mar 20)
-  const pay2     = paydays[1]; // second payday (e.g. Kristin Mar 26)
-  const pay1Day  = pay1.date.getDate();
-  const pay2Day  = pay2.date.getDate();
+  const today    = new Date();
+  today.setHours(0,0,0,0);
+  const cycle    = getPayCycle(today, 6);
 
-  // Only auto-switch if user hasn't manually toggled
-  if (!userPickedPeriod) {
-    activePeriod = (pay1.date - today) <= oneDay ? 1 : 0;
-  }
+  if (activePeriod >= cycle.length - 1) activePeriod = 0;
 
-  // Update toggle buttons
-  paydays.forEach((p, i) => {
-    const soon = (p.date - today) <= oneDay && (p.date - today) > 0;
-    document.getElementById(`period-who-${i}`).textContent  = p.who + "'s Check";
-    document.getElementById(`period-date-${i}`).textContent =
-      p.date.toLocaleDateString('en-US', { month:'short', day:'numeric' });
-    document.getElementById(`period-btn-${i}`).classList.toggle('active', i === activePeriod);
-    document.getElementById(`period-btn-${i}`).classList.toggle('soon', soon && i !== activePeriod);
-  });
+  const pay1 = cycle[activePeriod];
+  const pay2 = cycle[activePeriod + 1];
+
+  // Update nav label
+  document.getElementById('period-who-0').textContent  = pay1.who + "'s Check";
+  document.getElementById('period-date-0').textContent =
+    pay1.date.toLocaleDateString('en-US', { month:'short', day:'numeric' });
 
   const allBills = (state.bills || []).filter(b => !b.paid);
   const allTxs   = state.transactions || [];
 
-  // Safe Now: bills due STRICTLY before pay1 (today through day before payday)
-  const billsBeforePay1 = allBills.filter(b => {
-    const due = effectiveDue(b);
-    if (!due) return false;
-    return due >= todayDay && due < pay1Day;
+  // Convert a day-of-month into a real Date in the appropriate month
+  // Bills/txs only store day-of-month so we need to resolve them to real dates
+  // We resolve relative to today's month, but if the day has already passed we push to next month
+  function resolveDay(dayNum) {
+    if (!dayNum) return null;
+    const d = new Date(today.getFullYear(), today.getMonth(), dayNum);
+    // if the resolved date is before today, push to next month
+    if (d < today) d.setMonth(d.getMonth() + 1);
+    return d;
+  }
+
+  function billDate(b) { return resolveDay(effectiveDue(b)); }
+  function txDate(t)   { return resolveDay(t.day); }
+
+  // ── PERIOD 0: Safe Now ─────────────────────────────────────────────
+  const p0Start = today;
+  const p0End   = cycle[0].date; // exclusive: bills strictly before first payday
+
+  const billsBeforeP0 = allBills.filter(b => {
+    const d = billDate(b); return d && d >= p0Start && d < p0End;
   });
-
-  // After Payday bills list: due AFTER pay1 day through pay2 (21st–26th for display)
-  const billsBetweenPaydays = allBills.filter(b => {
-    const due = effectiveDue(b);
-    if (!due) return false;
-    return due > pay1Day && due <= pay2Day;
+  const miscBeforeP0 = allTxs.filter(t => {
+    const d = txDate(t); return d && d >= p0Start && d < p0End;
   });
+  const miscNoDate = allTxs.filter(t => !t.day);
 
-  // Bills due ON pay1 (the 20th) — these go in Josh's display period
-  const billsOnPay1 = allBills.filter(b => {
-    const due = effectiveDue(b);
-    if (!due) return false;
-    return due === pay1Day;
-  });
+  const safeNow = state.balance
+    - billsBeforeP0.reduce((s,b) => s + b.amount, 0)
+    - miscBeforeP0.reduce((s,t)  => s + t.amount, 0)
+    - miscNoDate.reduce((s,t)    => s + t.amount, 0);
 
-  // Misc due strictly before pay1
-  const miscBeforePay1     = allTxs.filter(t => t.day && t.day >= todayDay && t.day < pay1Day);
-  // Misc due on pay1 through pay2
-  const miscBetweenPaydays = allTxs.filter(t => t.day && t.day >= pay1Day && t.day <= pay2Day);
-  // Misc with no date — conservative: count in safe now
-  const miscNoDate         = allTxs.filter(t => !t.day);
+  // ── CHAIN through each period to compute running balance ───────────
+  function periodBills(i) {
+    const start = cycle[i].date;
+    const end   = cycle[i+1].date;
+    return allBills.filter(b => { const d = billDate(b); return d && d >= start && d < end; });
+  }
+  function periodMisc(i) {
+    const start = cycle[i].date;
+    const end   = cycle[i+1].date;
+    return allTxs.filter(t => { const d = txDate(t); return d && d >= start && d < end; });
+  }
 
-  const billsBefore1Total  = billsBeforePay1.reduce((s,b) => s + b.amount, 0);
-  const billsOnPay1Total   = billsOnPay1.reduce((s,b) => s + b.amount, 0);
-  const billsBetweenTotal  = billsBetweenPaydays.reduce((s,b) => s + b.amount, 0);
-  const miscBefore1Total   = miscBeforePay1.reduce((s,t) => s + t.amount, 0) + miscNoDate.reduce((s,t) => s + t.amount, 0);
-  const miscBetweenTotal   = miscBetweenPaydays.reduce((s,t) => s + t.amount, 0);
+  let running = safeNow;
+  for (let i = 0; i <= activePeriod; i++) {
+    const pb = periodBills(i).reduce((s,b) => s + b.amount, 0);
+    const pm = periodMisc(i).reduce((s,t)  => s + t.amount, 0);
+    running  = running + (state[cycle[i].checkKey] || 0) - pb - pm;
+  }
+  const safeAfter = running;
 
-  const check1 = state[pay1.checkKey] || 0;
-  const check2 = state[pay2.checkKey] || 0;
+  let prevRunning = safeNow;
+  for (let i = 0; i < activePeriod; i++) {
+    const pb   = periodBills(i).reduce((s,b) => s + b.amount, 0);
+    const pm   = periodMisc(i).reduce((s,t)  => s + t.amount, 0);
+    prevRunning = prevRunning + (state[cycle[i].checkKey] || 0) - pb - pm;
+  }
 
-  // SAFE NOW = balance − bills strictly before pay1 − misc before pay1
-  const safeNow = state.balance - billsBefore1Total - miscBefore1Total;
-
-  // AFTER PAY1 = safeNow + pay1 check − bills ON pay1 − bills between pay1 and pay2 − misc between
-  const safeAfter = safeNow + check1 - billsOnPay1Total - billsBetweenTotal - miscBetweenTotal;
-
-  // Display: Josh's period = bills before pay1 + bills ON pay1 day, Kristin's = bills after pay1 through pay2
-  const ap           = paydays[activePeriod];
-  const displayBills = activePeriod === 0 ? [...billsBeforePay1, ...billsOnPay1] : billsBetweenPaydays;
-  const check        = activePeriod === 0 ? check1 : check2;
+  // Display bills/misc for active period
+  const displayBills = periodBills(activePeriod);
+  const displayMisc  = periodMisc(activePeriod);
   const billsTotal   = displayBills.reduce((s,b) => s + b.amount, 0);
-  const miscTotal    = activePeriod === 0 ? miscBefore1Total : miscBetweenTotal;
+  const miscTotal    = displayMisc.reduce((s,t)  => s + t.amount, 0);
+  const check1       = state[pay1.checkKey] || 0;
 
-  // Hero
+  // ── RENDER ─────────────────────────────────────────────────────────
   const heroEl = document.getElementById('hero-balance');
   heroEl.textContent = money(state.balance);
   heroEl.className   = 'balance-amount ' + (state.balance >= 0 ? 'positive' : 'negative');
 
-  // Paycheck card — shows the active period's check
   document.getElementById('paycheck-card-label').textContent =
-    `💰 ${ap.who}'s Check — ${ap.date.toLocaleDateString('en-US',{month:'short',day:'numeric'})}`;
-  document.getElementById('active-check').value = check || '';
+    `💰 ${pay1.who}'s Check — ${pay1.date.toLocaleDateString('en-US',{month:'short',day:'numeric'})}`;
+  document.getElementById('active-check').value = check1 || '';
 
-  // Stats
   document.getElementById('stat-bills-remaining').textContent = money(billsTotal);
   document.getElementById('stat-misc').textContent            = money(miscTotal);
 
-  // Safe NOW
-  const safeNowEl = document.getElementById('stat-safe-now');
-  safeNowEl.textContent = (safeNow < 0 ? '-' : '') + money(safeNow);
-  safeNowEl.className   = 'safe-amount ' + (safeNow > 500 ? 'positive' : safeNow > 0 ? 'warn' : 'danger');
-  document.getElementById('safe-now-label').textContent =
-    `Until ${pay1.who}'s payday (${pay1.date.toLocaleDateString('en-US',{month:'short',day:'numeric'})})`;
-  document.getElementById('safe-now-breakdown').innerHTML =
-    `<span class="pos">+${money(state.balance)}</span>`
-    + (billsBefore1Total ? ` −<span class="neg">${money(billsBefore1Total)}</span> bills` : '')
-    + (miscBefore1Total  ? ` −<span class="neg">${money(miscBefore1Total)}</span> misc`   : '');
+  // Safe Now — period 0 only
+  const safeNowCard = document.querySelector('.safe-card:not(.after)');
+  safeNowCard.style.display = activePeriod === 0 ? '' : 'none';
+  if (activePeriod === 0) {
+    const el = document.getElementById('stat-safe-now');
+    el.textContent = (safeNow < 0 ? '-' : '') + money(safeNow);
+    el.className   = 'safe-amount ' + (safeNow > 200 ? 'positive' : safeNow > 0 ? 'warn' : 'danger');
+    document.getElementById('safe-now-label').textContent =
+      `Until ${pay1.who}'s payday (${pay1.date.toLocaleDateString('en-US',{month:'short',day:'numeric'})})`;
+    const bB = billsBeforeP0.reduce((s,b) => s + b.amount, 0);
+    const mB = miscBeforeP0.reduce((s,t)  => s + t.amount, 0)
+             + miscNoDate.reduce((s,t)    => s + t.amount, 0);
+    document.getElementById('safe-now-breakdown').innerHTML =
+      `<span class="pos">+${money(state.balance)}</span>`
+      + (bB ? ` −<span class="neg">${money(bB)}</span> bills` : '')
+      + (mB ? ` −<span class="neg">${money(mB)}</span> misc`  : '');
+  }
 
-  // Safe AFTER
-  const safeAfterEl = document.getElementById('stat-safe-after');
-  safeAfterEl.textContent = (safeAfter < 0 ? '-' : '') + money(safeAfter);
-  safeAfterEl.className   = 'safe-amount ' + (safeAfter > 500 ? 'positive' : safeAfter > 0 ? 'warn' : 'danger');
+  // After Payday
+  const afterEl = document.getElementById('stat-safe-after');
+  afterEl.textContent = (safeAfter < 0 ? '-' : '') + money(safeAfter);
+  afterEl.className   = 'safe-amount ' + (safeAfter > 200 ? 'positive' : safeAfter > 0 ? 'warn' : 'danger');
   document.getElementById('safe-after-label').textContent =
-    `After ${pay1.who}'s check + until ${pay2.who}'s payday`;
+    `After ${pay1.who}'s check → until ${pay2.who}'s payday (${pay2.date.toLocaleDateString('en-US',{month:'short',day:'numeric'})})`;
   document.getElementById('safe-after-breakdown').innerHTML =
-    `<span class="pos">+${money(safeNow)}</span>`
-    + (check1 ? ` +<span class="pos">${money(check1)}</span> ${pay1.who}` : '')
-    + (billsOnPay1Total + billsBetweenTotal ? ` −<span class="neg">${money(billsOnPay1Total + billsBetweenTotal)}</span> bills` : '')
-    + (miscBetweenTotal ? ` −<span class="neg">${money(miscBetweenTotal)}</span> misc` : '');
+    `<span class="pos">+${money(prevRunning)}</span>`
+    + (check1     ? ` +<span class="pos">${money(check1)}</span> ${pay1.who}` : '')
+    + (billsTotal ? ` −<span class="neg">${money(billsTotal)}</span> bills`   : '')
+    + (miscTotal  ? ` −<span class="neg">${money(miscTotal)}</span> misc`     : '');
 
   // Bills list
-  document.getElementById('dash-bills-title').textContent = `Bills — ${ap.who}'s Period`;
+  document.getElementById('dash-bills-title').textContent =
+    `Bills — ${pay1.who}'s Period (${pay1.date.toLocaleDateString('en-US',{month:'short',day:'numeric'})} – ${pay2.date.toLocaleDateString('en-US',{month:'short',day:'numeric'})})`;
   document.getElementById('unpaid-count').textContent = displayBills.length + ' left';
   document.getElementById('dashboard-bills-list').innerHTML = displayBills.length
     ? displayBills.map(b => dashBillHTML(b)).join('')
     : '<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">No bills due this period!</div></div>';
 
-  // Misc
+  // Misc list (show all misc expenses regardless of period — for reference)
   const txs = state.transactions || [];
   document.getElementById('dashboard-tx-list').innerHTML = txs.length
     ? txs.map(t => txHTML(t)).join('')
-    : '<div class="empty"><div class="empty-icon">📒</div><div class="empty-text">No misc expenses yet.</div></div>';
+    : '<div class="empty"><div class="empty-icon">📒</div><div class="empty-text">No misc expenses logged.</div></div>';
 }
 
 function dashBillHTML(b) {
@@ -1268,7 +1310,7 @@ Object.assign(window, {
   toggleBill, deleteBill, toggleAddBill, addBill, deleteTx,
   setBalance, confirmReset, closeResetModal, doReset,
   toggleBillsPeriod, updateActiveCheck, updatePaychecks,
-  switchPeriod, openOverrideModal, closeOverrideModal, saveOverride, clearOverride,
+  switchPeriod, shiftPeriod, openOverrideModal, closeOverrideModal, saveOverride, clearOverride,
 });
 
 render();
