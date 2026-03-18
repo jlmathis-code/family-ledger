@@ -951,7 +951,6 @@ function renderDashboard() {
   const billsTotal = periodBills.reduce((s,b) => s + b.amount, 0);
   const allTxs     = state.transactions || [];
   const check      = state[ap.checkKey] || 0;
-  const today      = new Date();
 
   // Misc expenses due before payday (day <= payday day, or no day = always counts)
   const miscNow   = allTxs.filter(t => !t.day || t.day <= ap.date.getDate());
