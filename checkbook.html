@@ -947,24 +947,24 @@ function renderDashboard() {
   const allBills = (state.bills || []).filter(b => !b.paid);
   const allTxs   = state.transactions || [];
 
-  // Bills due from today through pay1 day (inclusive) — what needs covering before/on payday
+  // Safe Now: bills due STRICTLY before pay1 (today through day before payday)
   const billsBeforePay1 = allBills.filter(b => {
     const due = effectiveDue(b);
     if (!due) return false;
-    return due >= todayDay && due <= pay1Day;
+    return due >= todayDay && due < pay1Day;
   });
 
-  // Bills due after pay1 through pay2 day
+  // After Payday: bills due ON pay1 through pay2 (payday itself through Kristin's payday)
   const billsBetweenPaydays = allBills.filter(b => {
     const due = effectiveDue(b);
     if (!due) return false;
-    return due > pay1Day && due <= pay2Day;
+    return due >= pay1Day && due <= pay2Day;
   });
 
-  // Misc due today through pay1
-  const miscBeforePay1     = allTxs.filter(t => t.day && t.day >= todayDay && t.day <= pay1Day);
-  // Misc due after pay1 through pay2
-  const miscBetweenPaydays = allTxs.filter(t => t.day && t.day > pay1Day && t.day <= pay2Day);
+  // Misc due strictly before pay1
+  const miscBeforePay1     = allTxs.filter(t => t.day && t.day >= todayDay && t.day < pay1Day);
+  // Misc due on pay1 through pay2
+  const miscBetweenPaydays = allTxs.filter(t => t.day && t.day >= pay1Day && t.day <= pay2Day);
   // Misc with no date — conservative: count in safe now
   const miscNoDate         = allTxs.filter(t => !t.day);
 
