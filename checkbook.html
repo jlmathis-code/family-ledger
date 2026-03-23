@@ -34,7 +34,6 @@
     min-height: 100vh;
     padding-bottom: 90px;
   }
-  /* Header */
   .header {
     background: var(--sidebar);
     border-bottom: none;
@@ -53,7 +52,6 @@
   }
   .icon-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
 
-  /* Nav */
   .nav {
     position: fixed; bottom: 0; left: 0; right: 0;
     background: var(--sidebar); border-top: none;
@@ -69,11 +67,9 @@
   .nav-btn .nav-icon { font-size: 20px; }
   .nav-btn.active { color: #6fcf7f; }
 
-  /* Pages */
   .page { display: none; padding: 16px; max-width: 680px; margin: 0 auto; }
   .page.active { display: block; }
 
-  /* Balance Hero */
   .balance-hero {
     background: var(--sidebar);
     border-radius: var(--radius); padding: 20px 24px; margin-bottom: 12px;
@@ -104,26 +100,35 @@
   }
   .balance-set-btn:hover { background: #3a9e4a; }
 
-  /* Period switcher */
   .period-switcher {
-    display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 12px 16px; box-shadow: var(--shadow);
+    display: grid; grid-template-columns: 52px 1fr 52px; gap: 10px; margin-bottom: 10px;
+    align-items: stretch;
   }
   .period-switch-btn {
-    background: var(--accent-dim); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 6px 14px; cursor: pointer;
-    font-size: 20px; color: var(--accent); font-weight: 700;
-    transition: all .2s; line-height: 1; flex-shrink: 0;
+    background: var(--card); border: 2px solid var(--border);
+    border-radius: var(--radius); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s; font-family: 'DM Sans', sans-serif;
+    color: var(--accent); font-size: 24px; font-weight: 700;
+    min-height: 64px;
   }
-  .period-switch-btn:hover { background: var(--accent); color: #fff; }
+  .period-switch-btn:hover { border-color: var(--accent); background: var(--accent-dim); }
   .period-active-label {
-    flex: 1; text-align: center; display: flex; flex-direction: column; gap: 2px;
+    background: var(--card); border: 2px solid var(--border);
+    border-radius: var(--radius); padding: 12px;
+    display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px;
+    box-shadow: var(--shadow);
+    text-align: center;
   }
   .psb-who { font-size: 14px; font-weight: 700; color: var(--accent); }
   .psb-date { font-size: 12px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+  .period-mode {
+    text-align: center; font-size: 11px; font-weight: 700; letter-spacing: .8px;
+    color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase;
+  }
+  .period-mode.viewing { color: var(--warning); }
+  .period-actions { display:flex; gap:10px; margin-bottom:12px; }
 
-  /* Paycheck card */
   .paycheck-card {
     background: var(--card); border: 1px solid var(--border);
     border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow);
@@ -138,14 +143,12 @@
   .paycheck-input:focus { border-color: var(--accent); }
   .paycheck-input::placeholder { color: var(--text-muted); }
 
-  /* Bill date override */
   .bill-date-btn { background: none; border: none; color: var(--text-muted);
     cursor: pointer; font-size: 11px; padding: 1px 4px; margin-left: 3px;
     opacity: 0.5; transition: opacity .2s; }
   .bill-date-btn:hover { opacity: 1; color: var(--accent); }
   .bill-due.overridden { color: var(--warning); font-weight: 600; }
 
-  /* Dual safe-to-spend */
   .safe-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
   .safe-card {
     background: var(--card); border: 1px solid var(--border);
@@ -166,7 +169,6 @@
   .safe-breakdown span.pos { color: var(--green); }
   .safe-breakdown span.neg { color: var(--red); }
 
-  /* Stats */
   .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
   .stat-card {
     background: var(--card); border: 1px solid var(--border);
@@ -178,7 +180,6 @@
   .stat-value.safe { color: var(--green); }
   .stat-value.warn { color: var(--warning); }
 
-  /* Section */
   .section-header {
     display: flex; align-items: center; justify-content: space-between;
     margin-bottom: 10px; margin-top: 18px;
@@ -191,7 +192,6 @@
   .section-badge.warn { background: var(--warning); color: #fff; }
   .section-badge.green { background: var(--green); color: #fff; }
 
-  /* Bills List */
   .bill-item {
     background: var(--card); border: 1px solid var(--border);
     border-radius: var(--radius-sm); padding: 12px 14px;
@@ -220,7 +220,6 @@
   .bill-item.dragging { opacity: 0.4; border: 1px dashed var(--accent); }
   .bill-item.drag-over { border-color: var(--accent); background: var(--accent-dim); transform: scale(1.01); }
 
-  /* Period bar */
   .period-bar {
     display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
     background: var(--card); border: 1px solid var(--border);
@@ -236,7 +235,6 @@
   }
   .period-toggle.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-  /* Transactions */
   .tx-item {
     background: var(--card); border: 1px solid var(--border);
     border-radius: var(--radius-sm); padding: 11px 14px;
@@ -255,7 +253,6 @@
   .tx-delete { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; padding: 4px; opacity: 0; transition: opacity .2s; }
   .tx-item:hover .tx-delete { opacity: 1; }
 
-  /* FAB */
   .fab {
     position: fixed; bottom: 80px; right: 20px;
     width: 52px; height: 52px; border-radius: 50%;
@@ -267,7 +264,6 @@
   .fab:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(45,122,58,0.5); }
   .fab.hidden { display: none; }
 
-  /* Modal */
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.45);
     z-index: 200; display: none; align-items: flex-end; justify-content: center;
@@ -302,7 +298,6 @@
   .btn-ghost { background: var(--bg); border: 1px solid var(--border); color: var(--text-dim); }
   .btn-ghost:hover { background: var(--border); }
 
-  /* Reset banner */
   .reset-banner {
     background: #fff8e1; border: 1px solid #ffe082;
     border-radius: var(--radius-sm); padding: 12px 16px;
@@ -310,18 +305,9 @@
     font-size: 13px; color: var(--warning);
   }
 
-  /* Empty state */
   .empty { text-align: center; padding: 32px 20px; color: var(--text-muted); }
   .empty-icon { font-size: 32px; margin-bottom: 8px; }
   .empty-text { font-size: 13px; }
-
-  /* Add misc btn */
-  .add-misc-btn {
-    background: none; border: 1px solid var(--border); color: var(--text-muted);
-    border-radius: 20px; padding: 3px 12px; font-size: 12px; font-weight: 600;
-    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .2s;
-  }
-  .add-misc-btn:hover { border-color: var(--accent); color: var(--accent); }
 
   .month-label {
     font-size: 11px; color: var(--text-muted); text-align: center;
@@ -341,51 +327,11 @@
     transition: all .2s; margin-bottom: 12px;
   }
   .add-btn:hover { border-color: var(--accent); color: var(--accent); }
-  /* Period switcher */
-  .period-switcher { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-  .period-switch-btn {
-    background: var(--card); border: 2px solid var(--border);
-    border-radius: var(--radius); padding: 12px; cursor: pointer;
-    display: flex; flex-direction: column; align-items: center; gap: 3px;
-    transition: all .2s; font-family: 'DM Sans', sans-serif;
-  }
-  .period-switch-btn.active { border-color: var(--accent); background: rgba(91,141,238,0.08); }
-  .period-switch-btn.soon { border-color: var(--warning); }
-  .period-switch-btn.soon .psb-who { color: var(--warning); }
-  .psb-who { font-size: 13px; font-weight: 600; color: var(--text-dim); }
-  .period-switch-btn.active .psb-who { color: var(--accent); }
-  .psb-date { font-size: 12px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
 
-  /* Paycheck inputs */
-  .paycheck-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-  .paycheck-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 14px;
+  @media (max-width: 560px) {
+    .safe-grid, .stats-grid, .form-row { grid-template-columns: 1fr; }
+    .period-actions { flex-direction: column; }
   }
-  .paycheck-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
-  .paycheck-input {
-    width: 100%; background: var(--surface); border: 1px solid var(--border);
-    color: var(--green); padding: 8px 10px; border-radius: var(--radius-sm);
-    font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500;
-    outline: none; transition: border-color .2s;
-  }
-  .paycheck-input:focus { border-color: var(--green); }
-  .paycheck-input::placeholder { color: var(--text-muted); }
-
-  /* Bill date override */
-  .bill-date-btn { background: none; border: none; color: var(--text-muted);
-    cursor: pointer; font-size: 11px; padding: 1px 4px; margin-left: 3px;
-    opacity: 0.5; transition: opacity .2s; }
-  .bill-date-btn:hover { opacity: 1; color: var(--accent); }
-  .bill-due.overridden { color: var(--warning); }
-
-  /* Add misc btn */
-  .add-misc-btn {
-    background: none; border: 1px solid var(--border); color: var(--text-muted);
-    border-radius: 20px; padding: 3px 12px; font-size: 12px; font-weight: 600;
-    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .2s;
-  }
-  .add-misc-btn:hover { border-color: var(--accent); color: var(--accent); }
 </style>
 </head>
 <body>
@@ -397,15 +343,14 @@
       <span id="sync-dot" style="width:7px;height:7px;border-radius:50%;background:var(--text-muted);display:inline-block;"></span>
       <span id="sync-label">Connecting...</span>
     </div>
-    <button class="icon-btn" onclick="confirmReset()" title="Reset all bills to unpaid">🔄 New Month</button>
+    <button class="icon-btn" onclick="confirmReset()" title="Reset all bills to unpaid">🔄 Reset Bills</button>
   </div>
 </div>
 
-<!-- Reset Confirm Modal -->
 <div class="modal-overlay" id="reset-modal">
   <div class="modal">
-    <div class="modal-title">🔄 New Month Reset</div>
-    <p style="color:var(--text-dim);font-size:14px;margin-bottom:20px;line-height:1.6">This will mark all bills as <strong style="color:var(--text)">unpaid</strong> and start a fresh month. Use this when you're ready to begin tracking a new pay cycle.</p>
+    <div class="modal-title">🔄 Reset Bills</div>
+    <p style="color:var(--text-dim);font-size:14px;margin-bottom:20px;line-height:1.6">This will mark all bills as <strong style="color:var(--text)">unpaid</strong> without changing your locked pay period.</p>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeResetModal()">Cancel</button>
       <button class="btn btn-primary" onclick="doReset()">Reset Bills</button>
@@ -413,7 +358,6 @@
   </div>
 </div>
 
-<!-- Bill Date Override Modal -->
 <div class="modal-overlay" id="override-modal">
   <div class="modal">
     <div class="modal-title">📅 Override Due Date</div>
@@ -432,10 +376,7 @@
   </div>
 </div>
 
-<!-- Pages -->
 <div id="page-dashboard" class="page active">
-
-  <!-- Balance Hero -->
   <div class="balance-hero">
     <div class="balance-label">Checking Balance</div>
     <div class="balance-amount" id="hero-balance">$0.00</div>
@@ -445,7 +386,6 @@
     </div>
   </div>
 
-  <!-- Period Toggle -->
   <div class="period-switcher">
     <button class="period-switch-btn" id="period-prev" onclick="shiftPeriod(-1)">‹</button>
     <div class="period-active-label">
@@ -454,14 +394,18 @@
     </div>
     <button class="period-switch-btn" id="period-next" onclick="shiftPeriod(1)">›</button>
   </div>
+  <div class="period-mode" id="period-mode-label">CURRENT OPEN PERIOD</div>
 
-  <!-- Paycheck Input for active period -->
   <div class="paycheck-card" style="margin-bottom:12px">
     <div class="paycheck-label" id="paycheck-card-label">💰 Paycheck</div>
     <input class="paycheck-input" id="active-check" type="number" step="0.01" placeholder="0.00" oninput="updateActiveCheck()">
   </div>
 
-  <!-- Stats Row -->
+  <div class="period-actions">
+    <button class="btn btn-ghost" type="button" onclick="jumpToCurrentPeriod()">↺ Return to Current</button>
+    <button class="btn btn-primary" type="button" onclick="closeOutPeriod()">✅ Close Out Period</button>
+  </div>
+
   <div class="stats-grid">
     <div class="stat-card">
       <div class="stat-label">Bills This Period</div>
@@ -473,7 +417,6 @@
     </div>
   </div>
 
-  <!-- Dual Safe to Spend -->
   <div class="safe-grid">
     <div class="safe-card">
       <div class="safe-label">Safe Now</div>
@@ -489,26 +432,22 @@
     </div>
   </div>
 
-  <!-- Bills This Period -->
   <div class="section-header">
     <div class="section-title" id="dash-bills-title">Bills This Period</div>
     <div class="section-badge warn" id="unpaid-count">0 left</div>
   </div>
   <div id="dashboard-bills-list"></div>
 
-  <!-- Misc Transactions -->
   <div class="section-header">
     <div class="section-title">Misc Expenses</div>
   </div>
   <div id="dashboard-tx-list"></div>
-
 </div>
 
 <div id="page-bills" class="page">
   <div class="month-label" id="bills-month-label"></div>
   <div id="reset-banner" class="reset-banner" style="display:none">
-    🔄 New month detected — tap to reset all bills to unpaid
-    <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px;flex:0" onclick="resetMonth()">Reset</button>
+    New calendar month detected — use Reset Bills when you are ready.
   </div>
   <button class="add-btn" onclick="toggleAddBill()">+ Add a Bill</button>
   <div class="period-bar">
@@ -551,10 +490,8 @@
   </div>
 </div>
 
-<!-- FAB -->
 <button class="fab" id="fab" onclick="openTxModal()">+</button>
 
-<!-- Bottom Nav -->
 <nav class="nav">
   <button class="nav-btn active" id="nav-dashboard" onclick="showPage('dashboard')">
     <span class="nav-icon">◈</span>Dashboard
@@ -567,7 +504,6 @@
   </button>
 </nav>
 
-<!-- Transaction Modal -->
 <div class="modal-overlay" id="tx-modal">
   <div class="modal">
     <div class="modal-title">Add Misc Expense</div>
@@ -592,15 +528,12 @@
   </div>
 </div>
 
-<!-- Firebase Status Toast -->
 <div id="sync-toast" style="position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 16px;font-size:12px;color:var(--text-dim);z-index:300;display:none;white-space:nowrap;"></div>
 
-<!-- Firebase CDN (compat version — global scope, no module needed) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
 <script>
-// ── FIREBASE CONFIG ───────────────────────────────────────────────────
 const firebaseConfig = {
   apiKey:            "AIzaSyAf_5LNs7mvCqsEKm40XocxCytzd1WZQ50",
   authDomain:        "family-ledger-b0341.firebaseapp.com",
@@ -610,8 +543,7 @@ const firebaseConfig = {
   messagingSenderId: "659065402079",
   appId:             "1:659065402079:web:11138049cd1d79bee96f6a"
 };
-// ─────────────────────────────────────────────────────────────────────
-// ── DEFAULT BILLS (from spreadsheet) ──────────────────────────────────
+
 const DEFAULT_BILLS = [
   { name: 'Electric', amount: 150.00, due: 1 },
   { name: 'Mortgage', amount: 1433.00, due: 1 },
@@ -643,9 +575,112 @@ const DEFAULT_BILLS = [
   { name: 'BND - Josh', amount: 87.00, due: 25 },
 ];
 
-// ── STATE ──────────────────────────────────────────────────────────────
-const DEFAULT_STATE = () => {
+const KRISTIN_ANCHOR = new Date(2026, 2, 26);
+const BIWEEKLY_MS = 14 * 24 * 60 * 60 * 1000;
+
+let state = null;
+let dbRef = null;
+let activePeriod = 0;
+let billsPeriodOnly = true;
+let overrideBillId = null;
+let dragSrcId = null;
+let touchItem = null, touchClone = null, touchOffX = 0, touchOffY = 0;
+
+function uid() { return Math.random().toString(36).slice(2, 10); }
+function fmt(d) { return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }); }
+function money(n) { return '$' + Math.abs(Number(n || 0)).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
+function startOfDay(d) { const x = new Date(d); x.setHours(0,0,0,0); return x; }
+function isoDate(d) { const x = startOfDay(d); return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`; }
+function fromIsoDate(str) { if (!str) return null; const [y,m,d] = str.split('-').map(Number); return new Date(y, m - 1, d); }
+function ordinal(n) { const s = ['th','st','nd','rd'], v = n % 100; return n + (s[(v-20)%10] || s[v] || s[0]); }
+
+function nextKristinPayday(from) {
+  let d = startOfDay(KRISTIN_ANCHOR);
+  const target = startOfDay(from);
+  while (d <= target) d = new Date(d.getTime() + BIWEEKLY_MS);
+  return d;
+}
+
+function getPayCycle(from, count = 6) {
+  const start = startOfDay(from);
+  const results = [];
+  let cursor = new Date(start.getFullYear(), start.getMonth(), 1);
+
+  for (let m = 0; m < 8; m++) {
+    const y = cursor.getFullYear();
+    const mo = cursor.getMonth();
+    [1, 5, 20].forEach(day => {
+      const who = day === 1 ? 'Disability' : 'Josh';
+      const checkKey = day === 1 ? 'disabilityCheck' : 'joshCheck';
+      const dt = new Date(y, mo, day);
+      if (dt > start) results.push({ date: dt, who, checkKey });
+    });
+    cursor = new Date(y, mo + 1, 1);
+  }
+
+  let k = nextKristinPayday(new Date(start.getTime() - 1));
+  for (let i = 0; i < 24; i++) {
+    results.push({ date: new Date(k), who: 'Kristin', checkKey: 'kristinCheck' });
+    k = new Date(k.getTime() + BIWEEKLY_MS);
+  }
+
+  return results
+    .map(p => ({ ...p, date: startOfDay(p.date) }))
+    .sort((a, b) => a.date - b.date)
+    .slice(0, count);
+}
+
+function getAllPaydaysAround(refDate, monthsBack = 3, monthsForward = 6) {
+  const ref = startOfDay(refDate);
+  const results = [];
+
+  for (let offset = -monthsBack; offset <= monthsForward; offset++) {
+    const base = new Date(ref.getFullYear(), ref.getMonth() + offset, 1);
+    const y = base.getFullYear();
+    const mo = base.getMonth();
+
+    results.push({ date: new Date(y, mo, 1), who: 'Disability', checkKey: 'disabilityCheck' });
+    results.push({ date: new Date(y, mo, 5), who: 'Josh', checkKey: 'joshCheck' });
+    results.push({ date: new Date(y, mo, 20), who: 'Josh', checkKey: 'joshCheck' });
+  }
+
+  const minDate = new Date(ref.getFullYear(), ref.getMonth() - monthsBack, 1);
+  const maxDate = new Date(ref.getFullYear(), ref.getMonth() + monthsForward + 1, 1);
+  let k = startOfDay(KRISTIN_ANCHOR);
+  while (k < minDate) k = new Date(k.getTime() + BIWEEKLY_MS);
+  while (k < maxDate) {
+    results.push({ date: new Date(k), who: 'Kristin', checkKey: 'kristinCheck' });
+    k = new Date(k.getTime() + BIWEEKLY_MS);
+  }
+
+  return results
+    .map(p => ({ ...p, date: startOfDay(p.date) }))
+    .sort((a, b) => a.date - b.date)
+    .filter((p, i, arr) => i === 0 || p.date.getTime() !== arr[i - 1].date.getTime() || p.who !== arr[i - 1].who);
+}
+
+function getCurrentOpenPeriod(refDate = new Date()) {
+  const today = startOfDay(refDate);
+  const paydays = getAllPaydaysAround(today);
+
+  let previous = null;
+  let next = null;
+  for (const p of paydays) {
+    if (p.date <= today) previous = p;
+    if (p.date > today) { next = p; break; }
+  }
+
+  if (!previous || !next) {
+    const cycle = getPayCycle(today, 2);
+    return { start: cycle[0], end: cycle[1] };
+  }
+
+  return { start: previous, end: next };
+}
+
+function DEFAULT_STATE() {
   const now = new Date();
+  const locked = getCurrentOpenPeriod(now);
   return {
     balance: 0,
     joshCheck: 0,
@@ -655,16 +690,73 @@ const DEFAULT_STATE = () => {
     bills: DEFAULT_BILLS.map(b => ({ ...b, id: uid(), paid: false })),
     lastMonth: now.getMonth(),
     lastYear: now.getFullYear(),
+    dateOverrides: {},
+    periodLock: {
+      start: isoDate(locked.start.date),
+      end: isoDate(locked.end.date),
+      who: locked.start.who,
+      checkKey: locked.start.checkKey,
+      closedAt: null
+    }
   };
-};
+}
 
-let state = DEFAULT_STATE();
-let dbRef = null;
-let isSaving = false;
+state = DEFAULT_STATE();
 
-function uid() { return Math.random().toString(36).slice(2,10); }
-function fmt(d) { return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }); }
-function money(n) { return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
+function normalizeState(data) {
+  const base = DEFAULT_STATE();
+  const merged = {
+    ...base,
+    ...data,
+    bills: Array.isArray(data?.bills) ? data.bills : base.bills,
+    transactions: Array.isArray(data?.transactions) ? data.transactions : [],
+    dateOverrides: data?.dateOverrides || {},
+  };
+
+  if (!merged.periodLock?.start || !merged.periodLock?.end) {
+    merged.periodLock = base.periodLock;
+  }
+
+  return merged;
+}
+
+function getLockedPeriod() {
+  if (state.periodLock?.start && state.periodLock?.end && state.periodLock?.who && state.periodLock?.checkKey) {
+    return {
+      start: {
+        date: fromIsoDate(state.periodLock.start),
+        who: state.periodLock.who,
+        checkKey: state.periodLock.checkKey
+      },
+      end: {
+        date: fromIsoDate(state.periodLock.end)
+      }
+    };
+  }
+
+  const current = getCurrentOpenPeriod(new Date());
+  state.periodLock = {
+    start: isoDate(current.start.date),
+    end: isoDate(current.end.date),
+    who: current.start.who,
+    checkKey: current.start.checkKey,
+    closedAt: null
+  };
+  return current;
+}
+
+function getViewedPeriod(offset = 0) {
+  const locked = getLockedPeriod();
+  const paydays = getAllPaydaysAround(locked.start.date, 4, 8);
+  const lockedIdx = paydays.findIndex(p => isoDate(p.date) === isoDate(locked.start.date) && p.who === locked.start.who);
+  if (lockedIdx === -1) return locked;
+
+  const startIdx = Math.max(0, Math.min(paydays.length - 2, lockedIdx + offset));
+  return {
+    start: paydays[startIdx],
+    end: paydays[startIdx + 1]
+  };
+}
 
 function setSyncStatus(status) {
   const dot = document.getElementById('sync-dot');
@@ -683,18 +775,20 @@ function setSyncStatus(status) {
 
 function showToast(msg) {
   const t = document.getElementById('sync-toast');
-  t.textContent = msg; t.style.display = 'block';
-  setTimeout(() => t.style.display = 'none', 2000);
+  t.textContent = msg;
+  t.style.display = 'block';
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(() => t.style.display = 'none', 2200);
 }
 
-// ── FIREBASE INIT ──────────────────────────────────────────────────────
 const notConfigured = firebaseConfig.apiKey === 'REPLACE_API_KEY';
 
 if (notConfigured) {
   const raw = localStorage.getItem('ledger_v2');
-  if (raw) state = JSON.parse(raw);
+  if (raw) state = normalizeState(JSON.parse(raw));
   setSyncStatus('offline');
   document.getElementById('sync-label').textContent = 'Local only';
+  render();
 } else {
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
@@ -703,14 +797,7 @@ if (notConfigured) {
   dbRef.on('value', (snapshot) => {
     const data = snapshot.val();
     if (data) {
-      state = {
-        ...data,
-        bills:         data.bills        || [],
-        transactions:  data.transactions || [],
-        joshCheck:       data.joshCheck       || 0,
-        kristinCheck:    data.kristinCheck    || 0,
-        disabilityCheck: data.disabilityCheck || 0,
-      };
+      state = normalizeState(data);
     } else {
       dbRef.set(state);
     }
@@ -722,6 +809,7 @@ if (notConfigured) {
 function saveState() {
   if (notConfigured) {
     localStorage.setItem('ledger_v2', JSON.stringify(state));
+    showToast('Saved locally');
     return;
   }
   setSyncStatus('saving');
@@ -731,7 +819,6 @@ function saveState() {
   }).catch(() => setSyncStatus('offline'));
 }
 
-// ── MONTH RESET CHECK ──────────────────────────────────────────────────
 function confirmReset() { document.getElementById('reset-modal').classList.add('open'); }
 function closeResetModal() { document.getElementById('reset-modal').classList.remove('open'); }
 function doReset() {
@@ -745,14 +832,9 @@ function doReset() {
 }
 
 function checkMonthReset() {
-  // Banner is now just informational — no button needed, reset is in header
   const now = new Date();
   const banner = document.getElementById('reset-banner');
-  if (now.getMonth() !== state.lastMonth || now.getFullYear() !== state.lastYear) {
-    banner.style.display = 'flex';
-  } else {
-    banner.style.display = 'none';
-  }
+  banner.style.display = (now.getMonth() !== state.lastMonth || now.getFullYear() !== state.lastYear) ? 'flex' : 'none';
 }
 
 function setBalance() {
@@ -764,7 +846,6 @@ function setBalance() {
   render();
 }
 
-// ── NAV ────────────────────────────────────────────────────────────────
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -774,35 +855,26 @@ function showPage(name) {
   render();
 }
 
-// ── TRANSACTION MODAL ──────────────────────────────────────────────────
-let currentType = 'withdrawal';
 function openTxModal() {
   document.getElementById('tx-modal').classList.add('open');
-  document.getElementById('tx-desc').value   = '';
+  document.getElementById('tx-desc').value = '';
   document.getElementById('tx-amount').value = '';
-  document.getElementById('tx-day').value    = '';
+  document.getElementById('tx-day').value = '';
   setTimeout(() => document.getElementById('tx-desc').focus(), 100);
 }
 function closeTxModal() { document.getElementById('tx-modal').classList.remove('open'); }
-function setType(t) {
-  currentType = t;
-  document.getElementById('type-withdrawal').className = 'type-btn' + (t==='withdrawal' ? ' active-withdrawal' : '');
-  document.getElementById('type-deposit').className = 'type-btn' + (t==='deposit' ? ' active-deposit' : '');
-}
 function saveTransaction() {
   const desc = document.getElementById('tx-desc').value.trim();
-  const amt  = parseFloat(document.getElementById('tx-amount').value);
-  const day  = parseInt(document.getElementById('tx-day').value) || null;
+  const amt = parseFloat(document.getElementById('tx-amount').value);
+  const day = parseInt(document.getElementById('tx-day').value) || null;
   if (!desc || isNaN(amt) || amt <= 0) return;
   const tx = { id: uid(), desc, amount: amt, day, date: fmt(new Date()) };
-  if (!state.transactions) state.transactions = [];
   state.transactions.unshift(tx);
   saveState();
   closeTxModal();
   render();
 }
 
-// ── BILLS ──────────────────────────────────────────────────────────────
 function toggleBill(id) {
   const bill = state.bills.find(b => b.id === id);
   if (!bill) return;
@@ -812,6 +884,7 @@ function toggleBill(id) {
 }
 function deleteBill(id) {
   state.bills = state.bills.filter(b => b.id !== id);
+  if (state.dateOverrides) delete state.dateOverrides[id];
   saveState();
   render();
 }
@@ -824,7 +897,7 @@ function addBill() {
   const due = parseInt(document.getElementById('new-bill-due').value);
   if (!name || isNaN(amount) || amount <= 0) return;
   state.bills.push({ id: uid(), name, amount, due: isNaN(due) ? 1 : due, paid: false });
-  state.bills.sort((a,b) => (a.due||99)-(b.due||99));
+  state.bills.sort((a,b) => (a.due||99) - (b.due||99));
   saveState();
   document.getElementById('new-bill-name').value = '';
   document.getElementById('new-bill-amount').value = '';
@@ -838,80 +911,41 @@ function deleteTx(id) {
   render();
 }
 
-// ── MONTH RESET CHECK ──────────────────────────────────────────────────
-function render() {
-  renderDashboard();
-  renderBills();
-  renderCheckbook();
-}
-
-// ── 4-PAYDAY ROLLING CYCLE ─────────────────────────────────────────────
-// Josh: 5th and 20th every month
-// Kristin: biweekly from Mar 26 2026
-// Disability: 1st every month
-const KRISTIN_ANCHOR = new Date(2026, 2, 26);
-const BIWEEKLY_MS    = 14 * 24 * 60 * 60 * 1000;
-
-function nextKristinPayday(from) {
-  let d = new Date(KRISTIN_ANCHOR);
-  while (d <= from) d = new Date(d.getTime() + BIWEEKLY_MS);
-  while (new Date(d.getTime() - BIWEEKLY_MS) > from) d = new Date(d.getTime() - BIWEEKLY_MS);
-  return d;
-}
-
-// Returns the next N paydays after `from` across all 4 sources, sorted ascending
-function getPayCycle(from, count = 6) {
-  const results = [];
-  let cursor = new Date(from);
-  // generate enough candidates to cover `count` paydays
-  for (let m = 0; m < 4; m++) {
-    const y = cursor.getFullYear(), mo = cursor.getMonth();
-    // Josh: 5th and 20th
-    [5, 20].forEach(d => {
-      const dt = new Date(y, mo, d);
-      if (dt > from) results.push({ date: dt, who: 'Josh', checkKey: 'joshCheck' });
-    });
-    // Disability: 1st
-    const dis = new Date(y, mo, 1);
-    if (dis > from) results.push({ date: dis, who: 'Disability', checkKey: 'disabilityCheck' });
-    // Kristin biweekly
-    const kd = nextKristinPayday(new Date(y, mo, 0)); // seed from prev month end
-    // add all kristin paydays in range
-    let kc = new Date(KRISTIN_ANCHOR);
-    while (kc <= from) kc = new Date(kc.getTime() + BIWEEKLY_MS);
-    for (let i = 0; i < 3; i++) {
-      if (kc.getFullYear() === y || kc.getFullYear() === y + 1) {
-        results.push({ date: new Date(kc), who: 'Kristin', checkKey: 'kristinCheck' });
-      }
-      kc = new Date(kc.getTime() + BIWEEKLY_MS);
-    }
-    cursor = new Date(y, mo + 1, 1);
-  }
-  // dedupe by date string, sort, slice
-  const seen = new Set();
-  return results
-    .filter(p => { const k = p.date.toDateString(); if (seen.has(k)) return false; seen.add(k); return p.date > from; })
-    .sort((a, b) => a.date - b.date)
-    .slice(0, count);
-}
-
-// keep for renderBills compat
-function getNextPayday() { return getPayCycle(new Date(), 1)[0]; }
-function getNextTwoPaydays() { return getPayCycle(new Date(), 2); }
-
-// ── PERIOD SWITCHING ───────────────────────────────────────────────────
-let activePeriod = 0;
-
 function shiftPeriod(dir) {
-  const cycle = getPayCycle(new Date(), 6);
-  activePeriod = Math.max(0, Math.min(cycle.length - 2, activePeriod + dir));
+  const locked = getLockedPeriod();
+  const paydays = getAllPaydaysAround(locked.start.date, 4, 8);
+  const lockedIdx = paydays.findIndex(p => isoDate(p.date) === isoDate(locked.start.date) && p.who === locked.start.who);
+  const minOffset = -Math.min(lockedIdx, 4);
+  const maxOffset = Math.max(0, paydays.length - lockedIdx - 2);
+  activePeriod = Math.max(minOffset, Math.min(maxOffset, activePeriod + dir));
   renderDashboard();
 }
-// legacy compat
-function switchPeriod(idx) { activePeriod = idx; renderDashboard(); }
 
-// ── BILL DATE OVERRIDES ────────────────────────────────────────────────
-let overrideBillId = null;
+function jumpToCurrentPeriod() {
+  activePeriod = 0;
+  renderDashboard();
+}
+
+function closeOutPeriod() {
+  const locked = getLockedPeriod();
+  const paydays = getAllPaydaysAround(locked.start.date, 1, 6);
+  const idx = paydays.findIndex(p => isoDate(p.date) === isoDate(locked.start.date) && p.who === locked.start.who);
+  if (idx === -1 || !paydays[idx + 1] || !paydays[idx + 2]) return;
+
+  const nextStart = paydays[idx + 1];
+  const nextEnd = paydays[idx + 2];
+  state.periodLock = {
+    start: isoDate(nextStart.date),
+    end: isoDate(nextEnd.date),
+    who: nextStart.who,
+    checkKey: nextStart.checkKey,
+    closedAt: isoDate(new Date())
+  };
+  activePeriod = 0;
+  saveState();
+  render();
+}
+
 function openOverrideModal(id) {
   overrideBillId = id;
   const bill = (state.bills || []).find(b => b.id === id);
@@ -930,168 +964,150 @@ function saveOverride() {
   if (!overrideBillId || isNaN(day) || day < 1 || day > 31) return;
   if (!state.dateOverrides) state.dateOverrides = {};
   state.dateOverrides[overrideBillId] = day;
-  saveState(); closeOverrideModal(); renderDashboard();
+  saveState();
+  closeOverrideModal();
+  renderDashboard();
 }
 function clearOverride() {
   if (!overrideBillId) return;
   if (state.dateOverrides) delete state.dateOverrides[overrideBillId];
-  saveState(); closeOverrideModal(); renderDashboard();
+  saveState();
+  closeOverrideModal();
+  renderDashboard();
 }
 function effectiveDue(bill) {
   return (state.dateOverrides || {})[bill.id] ?? bill.due;
 }
 
-// ── PAYCHECK INPUT ─────────────────────────────────────────────────────
 function updateActiveCheck() {
-  const cycle = getPayCycle(new Date(), 6);
-  const key   = cycle[activePeriod].checkKey;
-  state[key]  = parseFloat(document.getElementById('active-check').value) || 0;
-  saveState(); renderDashboard();
+  const viewed = getViewedPeriod(activePeriod);
+  const key = viewed.start.checkKey;
+  state[key] = parseFloat(document.getElementById('active-check').value) || 0;
+  saveState();
+  renderDashboard();
 }
 function updatePaychecks() { updateActiveCheck(); }
 
+function resolvePeriodDay(dayNum, periodStart, periodEnd) {
+  if (!dayNum) return null;
+  let d = new Date(periodStart.getFullYear(), periodStart.getMonth(), dayNum);
+  d = startOfDay(d);
+  if (d < periodStart) {
+    d.setMonth(d.getMonth() + 1);
+    d = startOfDay(d);
+  }
+  return d;
+}
+
 function renderDashboard() {
-  const today    = new Date();
-  today.setHours(0,0,0,0);
-  const cycle    = getPayCycle(today, 6);
-
-  if (activePeriod >= cycle.length - 1) activePeriod = 0;
-
-  const pay1 = cycle[activePeriod];
-  const pay2 = cycle[activePeriod + 1];
-
-  // Update nav label
-  document.getElementById('period-who-0').textContent  = pay1.who + "'s Check";
-  document.getElementById('period-date-0').textContent =
-    pay1.date.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  const today = startOfDay(new Date());
+  const viewed = getViewedPeriod(activePeriod);
+  const locked = getLockedPeriod();
+  const pay1 = viewed.start;
+  const pay2 = viewed.end;
+  const lockedStart = locked.start.date;
+  const lockedEnd = locked.end.date;
+  const isViewingCurrent = isoDate(pay1.date) === isoDate(lockedStart) && pay1.who === locked.start.who;
 
   const allBills = (state.bills || []).filter(b => !b.paid);
-  const allTxs   = state.transactions || [];
+  const allTxs = state.transactions || [];
 
-  // Convert a day-of-month into a real Date in the appropriate month
-  // Bills/txs only store day-of-month so we need to resolve them to real dates
-  // We resolve relative to today's month, but if the day has already passed we push to next month
-  function resolveDay(dayNum) {
-    if (!dayNum) return null;
-    const d = new Date(today.getFullYear(), today.getMonth(), dayNum);
-    // if the resolved date is before today, push to next month
-    if (d < today) d.setMonth(d.getMonth() + 1);
-    return d;
-  }
+  function billDate(b) { return resolvePeriodDay(effectiveDue(b), pay1.date, pay2.date); }
+  function txDate(t) { return resolvePeriodDay(t.day, pay1.date, pay2.date); }
 
-  function billDate(b) { return resolveDay(effectiveDue(b)); }
-  function txDate(t)   { return resolveDay(t.day); }
-
-  // ── PERIOD 0: Safe Now ─────────────────────────────────────────────
-  const p0Start = today;
-  const p0End   = cycle[0].date; // exclusive: bills strictly before first payday
-
-  const billsBeforeP0 = allBills.filter(b => {
-    const d = billDate(b); return d && d >= p0Start && d < p0End;
+  const displayBills = allBills.filter(b => {
+    const d = billDate(b);
+    return d && d >= pay1.date && d < pay2.date;
   });
-  const miscBeforeP0 = allTxs.filter(t => {
-    const d = txDate(t); return d && d >= p0Start && d < p0End;
+  const displayMisc = allTxs.filter(t => {
+    const d = txDate(t);
+    return d && d >= pay1.date && d < pay2.date;
   });
   const miscNoDate = allTxs.filter(t => !t.day);
 
+  function resolveLockedDay(dayNum) {
+    return resolvePeriodDay(dayNum, lockedStart, lockedEnd);
+  }
+
+  const billsBeforeLockedEnd = allBills.filter(b => {
+    const d = resolveLockedDay(effectiveDue(b));
+    return d && d >= today && d < lockedEnd;
+  });
+  const miscBeforeLockedEnd = allTxs.filter(t => {
+    const d = resolveLockedDay(t.day);
+    return d && d >= today && d < lockedEnd;
+  });
+
+  const billsTotal = displayBills.reduce((s, b) => s + b.amount, 0);
+  const miscTotal = displayMisc.reduce((s, t) => s + t.amount, 0);
+  const check1 = state[pay1.checkKey] || 0;
+
   const safeNow = state.balance
-    - billsBeforeP0.reduce((s,b) => s + b.amount, 0)
-    - miscBeforeP0.reduce((s,t)  => s + t.amount, 0)
-    - miscNoDate.reduce((s,t)    => s + t.amount, 0);
+    - billsBeforeLockedEnd.reduce((s, b) => s + b.amount, 0)
+    - miscBeforeLockedEnd.reduce((s, t) => s + t.amount, 0)
+    - miscNoDate.reduce((s, t) => s + t.amount, 0);
 
-  // ── CHAIN through each period to compute running balance ───────────
-  function periodBills(i) {
-    const start = cycle[i].date;
-    const end   = cycle[i+1].date;
-    return allBills.filter(b => { const d = billDate(b); return d && d >= start && d < end; });
-  }
-  function periodMisc(i) {
-    const start = cycle[i].date;
-    const end   = cycle[i+1].date;
-    return allTxs.filter(t => { const d = txDate(t); return d && d >= start && d < end; });
-  }
+  const safeAfter = state.balance + check1 - billsTotal - miscTotal;
 
-  let running = safeNow;
-  for (let i = 0; i <= activePeriod; i++) {
-    const pb = periodBills(i).reduce((s,b) => s + b.amount, 0);
-    const pm = periodMisc(i).reduce((s,t)  => s + t.amount, 0);
-    running  = running + (state[cycle[i].checkKey] || 0) - pb - pm;
-  }
-  const safeAfter = running;
-
-  let prevRunning = safeNow;
-  for (let i = 0; i < activePeriod; i++) {
-    const pb   = periodBills(i).reduce((s,b) => s + b.amount, 0);
-    const pm   = periodMisc(i).reduce((s,t)  => s + t.amount, 0);
-    prevRunning = prevRunning + (state[cycle[i].checkKey] || 0) - pb - pm;
-  }
-
-  // Display bills/misc for active period
-  const displayBills = periodBills(activePeriod);
-  const displayMisc  = periodMisc(activePeriod);
-  const billsTotal   = displayBills.reduce((s,b) => s + b.amount, 0);
-  const miscTotal    = displayMisc.reduce((s,t)  => s + t.amount, 0);
-  const check1       = state[pay1.checkKey] || 0;
-
-  // ── RENDER ─────────────────────────────────────────────────────────
   const heroEl = document.getElementById('hero-balance');
   heroEl.textContent = money(state.balance);
-  heroEl.className   = 'balance-amount ' + (state.balance >= 0 ? 'positive' : 'negative');
+  heroEl.className = 'balance-amount ' + (state.balance >= 0 ? 'positive' : 'negative');
+
+  document.getElementById('period-who-0').textContent = isViewingCurrent
+    ? `${pay1.who}'s Current Period`
+    : `${pay1.who}'s Period`;
+  document.getElementById('period-date-0').textContent =
+    `${pay1.date.toLocaleDateString('en-US', { month:'short', day:'numeric' })} – ${pay2.date.toLocaleDateString('en-US', { month:'short', day:'numeric' })}`;
+
+  const modeLabel = document.getElementById('period-mode-label');
+  modeLabel.textContent = isViewingCurrent ? 'CURRENT OPEN PERIOD' : 'VIEWING ONLY';
+  modeLabel.className = 'period-mode' + (isViewingCurrent ? '' : ' viewing');
 
   document.getElementById('paycheck-card-label').textContent =
-    `💰 ${pay1.who}'s Check — ${pay1.date.toLocaleDateString('en-US',{month:'short',day:'numeric'})}`;
+    `💰 ${pay1.who}'s Check — ${pay1.date.toLocaleDateString('en-US', { month:'short', day:'numeric' })}`;
   document.getElementById('active-check').value = check1 || '';
 
   document.getElementById('stat-bills-remaining').textContent = money(billsTotal);
-  document.getElementById('stat-misc').textContent            = money(miscTotal);
+  document.getElementById('stat-misc').textContent = money(miscTotal);
 
-  // Safe Now — period 0 only
-  const safeNowCard = document.querySelector('.safe-card:not(.after)');
-  safeNowCard.style.display = activePeriod === 0 ? '' : 'none';
-  if (activePeriod === 0) {
-    const el = document.getElementById('stat-safe-now');
-    el.textContent = (safeNow < 0 ? '-' : '') + money(safeNow);
-    el.className   = 'safe-amount ' + (safeNow > 200 ? 'positive' : safeNow > 0 ? 'warn' : 'danger');
-    document.getElementById('safe-now-label').textContent =
-      `Until ${pay1.who}'s payday (${pay1.date.toLocaleDateString('en-US',{month:'short',day:'numeric'})})`;
-    const bB = billsBeforeP0.reduce((s,b) => s + b.amount, 0);
-    const mB = miscBeforeP0.reduce((s,t)  => s + t.amount, 0)
-             + miscNoDate.reduce((s,t)    => s + t.amount, 0);
-    document.getElementById('safe-now-breakdown').innerHTML =
-      `<span class="pos">+${money(state.balance)}</span>`
-      + (bB ? ` −<span class="neg">${money(bB)}</span> bills` : '')
-      + (mB ? ` −<span class="neg">${money(mB)}</span> misc`  : '');
-  }
+  const nowEl = document.getElementById('stat-safe-now');
+  nowEl.textContent = (safeNow < 0 ? '-' : '') + money(safeNow);
+  nowEl.className = 'safe-amount ' + (safeNow > 200 ? 'positive' : safeNow > 0 ? 'warn' : 'danger');
+  document.getElementById('safe-now-label').textContent = isViewingCurrent
+    ? `Until locked period ends (${lockedEnd.toLocaleDateString('en-US', { month:'short', day:'numeric' })})`
+    : `Viewing only — current locked cycle still ends ${lockedEnd.toLocaleDateString('en-US', { month:'short', day:'numeric' })}`;
+  const lockedBillsTotal = billsBeforeLockedEnd.reduce((s, b) => s + b.amount, 0);
+  const lockedMiscTotal = miscBeforeLockedEnd.reduce((s, t) => s + t.amount, 0) + miscNoDate.reduce((s, t) => s + t.amount, 0);
+  document.getElementById('safe-now-breakdown').innerHTML =
+    `<span class="pos">+${money(state.balance)}</span>` +
+    (lockedBillsTotal ? ` −<span class="neg">${money(lockedBillsTotal)}</span> bills` : '') +
+    (lockedMiscTotal ? ` −<span class="neg">${money(lockedMiscTotal)}</span> misc` : '');
 
-  // After Payday
   const afterEl = document.getElementById('stat-safe-after');
   afterEl.textContent = (safeAfter < 0 ? '-' : '') + money(safeAfter);
-  afterEl.className   = 'safe-amount ' + (safeAfter > 200 ? 'positive' : safeAfter > 0 ? 'warn' : 'danger');
+  afterEl.className = 'safe-amount ' + (safeAfter > 200 ? 'positive' : safeAfter > 0 ? 'warn' : 'danger');
   document.getElementById('safe-after-label').textContent =
-    `After ${pay1.who}'s check → until ${pay2.who}'s payday (${pay2.date.toLocaleDateString('en-US',{month:'short',day:'numeric'})})`;
+    `After ${pay1.who}'s check → until ${pay2.who}'s payday (${pay2.date.toLocaleDateString('en-US', { month:'short', day:'numeric' })})`;
   document.getElementById('safe-after-breakdown').innerHTML =
-    `<span class="pos">+${money(prevRunning)}</span>`
-    + (check1     ? ` +<span class="pos">${money(check1)}</span> ${pay1.who}` : '')
-    + (billsTotal ? ` −<span class="neg">${money(billsTotal)}</span> bills`   : '')
-    + (miscTotal  ? ` −<span class="neg">${money(miscTotal)}</span> misc`     : '');
+    `<span class="pos">+${money(state.balance)}</span>` +
+    (check1 ? ` +<span class="pos">${money(check1)}</span> ${pay1.who}` : '') +
+    (billsTotal ? ` −<span class="neg">${money(billsTotal)}</span> bills` : '') +
+    (miscTotal ? ` −<span class="neg">${money(miscTotal)}</span> misc` : '');
 
-  // Bills list
   document.getElementById('dash-bills-title').textContent =
-    `Bills — ${pay1.who}'s Period (${pay1.date.toLocaleDateString('en-US',{month:'short',day:'numeric'})} – ${pay2.date.toLocaleDateString('en-US',{month:'short',day:'numeric'})})`;
+    `Bills — ${pay1.who}'s Period (${pay1.date.toLocaleDateString('en-US', { month:'short', day:'numeric' })} – ${pay2.date.toLocaleDateString('en-US', { month:'short', day:'numeric' })})`;
   document.getElementById('unpaid-count').textContent = displayBills.length + ' left';
   document.getElementById('dashboard-bills-list').innerHTML = displayBills.length
     ? displayBills.map(b => dashBillHTML(b)).join('')
     : '<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">No bills due this period!</div></div>';
 
-  // Misc list (show all misc expenses regardless of period — for reference)
-  const txs = state.transactions || [];
-  document.getElementById('dashboard-tx-list').innerHTML = txs.length
-    ? txs.map(t => txHTML(t)).join('')
+  document.getElementById('dashboard-tx-list').innerHTML = (state.transactions || []).length
+    ? state.transactions.map(t => txHTML(t)).join('')
     : '<div class="empty"><div class="empty-icon">📒</div><div class="empty-text">No misc expenses logged.</div></div>';
 }
 
 function dashBillHTML(b) {
-  const due    = effectiveDue(b);
+  const due = effectiveDue(b);
   const isOver = (state.dateOverrides || {})[b.id] !== undefined;
   return `<div class="bill-item ${b.paid ? 'paid' : ''}">
     <button class="bill-check" onclick="toggleBill('${b.id}')">${b.paid ? '✓' : ''}</button>
@@ -1105,7 +1121,6 @@ function dashBillHTML(b) {
   </div>`;
 }
 
-let billsPeriodOnly = true;
 function toggleBillsPeriod() {
   billsPeriodOnly = !billsPeriodOnly;
   const btn = document.getElementById('bills-period-toggle');
@@ -1114,52 +1129,48 @@ function toggleBillsPeriod() {
   renderBills();
 }
 
+function getNextPayday() {
+  const locked = getLockedPeriod();
+  return locked.end.date ? { date: locked.end.date, who: 'Next' } : getPayCycle(new Date(), 1)[0];
+}
+
 function renderBills() {
   const now = new Date();
   document.getElementById('bills-month-label').textContent =
     now.toLocaleDateString('en-US', { month:'long', year:'numeric' }).toUpperCase();
   checkMonthReset();
 
-  const nextPay    = getNextPayday();
-  const payDateStr = nextPay.date.toLocaleDateString('en-US', { month:'short', day:'numeric' });
-  document.getElementById('bills-period-label').textContent = `${nextPay.who}'s payday (${payDateStr})`;
+  const locked = getLockedPeriod();
+  const payDateStr = locked.end.date.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  document.getElementById('bills-period-label').textContent = `${locked.start.who}'s locked cycle ends (${payDateStr})`;
 
   let display = [...(state.bills || [])];
   if (billsPeriodOnly) {
     display = display.filter(b => {
-      if (!b.due) return true;
-      const sameMonth = nextPay.date.getMonth() === now.getMonth() && nextPay.date.getFullYear() === now.getFullYear();
-      return sameMonth ? b.due >= now.getDate() && b.due <= nextPay.date.getDate() : true;
+      const d = resolvePeriodDay(effectiveDue(b), locked.start.date, locked.end.date);
+      return d && d >= locked.start.date && d < locked.end.date;
     });
   }
 
   const unpaid = display.filter(b => !b.paid);
-  const paid   = display.filter(b => b.paid);
+  const paid = display.filter(b => b.paid);
   const container = document.getElementById('bills-list');
   container.innerHTML = [...unpaid, ...paid].map(b => billHTML(b, true, true)).join('');
   initDragDrop();
 }
 
-
-// ── DRAG AND DROP ──────────────────────────────────────────────────────
-let dragSrcId = null;
-
 function initDragDrop() {
   const items = document.querySelectorAll('#bills-list .bill-item[data-id]');
   items.forEach(item => {
     item.addEventListener('dragstart', onDragStart);
-    item.addEventListener('dragover',  onDragOver);
+    item.addEventListener('dragover', onDragOver);
     item.addEventListener('dragleave', onDragLeave);
-    item.addEventListener('drop',      onDrop);
-    item.addEventListener('dragend',   onDragEnd);
-    // Touch support
+    item.addEventListener('drop', onDrop);
+    item.addEventListener('dragend', onDragEnd);
     const handle = item.querySelector('.drag-handle');
-    if (handle) {
-      handle.addEventListener('touchstart', onTouchStart, { passive: false });
-    }
+    if (handle) handle.addEventListener('touchstart', onTouchStart, { passive: false });
   });
 }
-
 function onDragStart(e) {
   dragSrcId = this.dataset.id;
   this.classList.add('dragging');
@@ -1185,13 +1196,8 @@ function onDrop(e) {
   renderBills();
 }
 function onDragEnd() {
-  document.querySelectorAll('.bill-item').forEach(el => {
-    el.classList.remove('dragging', 'drag-over');
-  });
+  document.querySelectorAll('.bill-item').forEach(el => el.classList.remove('dragging', 'drag-over'));
 }
-
-// Touch drag support
-let touchItem = null, touchClone = null, touchOffX = 0, touchOffY = 0;
 function onTouchStart(e) {
   const item = e.target.closest('.bill-item');
   if (!item) return;
@@ -1214,9 +1220,8 @@ function onTouchMove(e) {
   const t = e.touches[0];
   if (touchClone) {
     touchClone.style.left = (t.clientX - touchOffX) + 'px';
-    touchClone.style.top  = (t.clientY - touchOffY) + 'px';
+    touchClone.style.top = (t.clientY - touchOffY) + 'px';
   }
-  // highlight target
   document.querySelectorAll('.bill-item').forEach(el => el.classList.remove('drag-over'));
   const el = document.elementFromPoint(t.clientX, t.clientY);
   const target = el && el.closest('.bill-item[data-id]');
@@ -1239,17 +1244,18 @@ function onTouchEnd(e) {
     }
   }
   document.querySelectorAll('.bill-item').forEach(el => el.classList.remove('dragging','drag-over'));
-  touchItem = null; dragSrcId = null;
+  touchItem = null;
+  dragSrcId = null;
   renderBills();
 }
 
 function renderCheckbook() {
-  const txs = (state.transactions || []);
-  const total = txs.reduce((s,t) => s + t.amount, 0);
+  const txs = state.transactions || [];
+  const total = txs.reduce((s, t) => s + t.amount, 0);
   document.getElementById('tx-balance-label').textContent = txs.length ? '−' + money(total) : '';
-  const list  = document.getElementById('tx-list');
+  const list = document.getElementById('tx-list');
   const empty = document.getElementById('tx-empty');
-  if (txs.length === 0) {
+  if (!txs.length) {
     list.innerHTML = '';
     empty.style.display = 'block';
   } else {
@@ -1258,7 +1264,7 @@ function renderCheckbook() {
   }
 }
 
-function billHTML(b, showDelete=false, showDrag=false) {
+function billHTML(b, showDelete = false, showDrag = false) {
   return `<div class="bill-item ${b.paid ? 'paid' : ''}" data-id="${b.id}" draggable="${showDrag}">
     ${showDrag ? `<span class="drag-handle" title="Drag to reorder">⠿</span>` : ''}
     <button class="bill-check" onclick="toggleBill('${b.id}')">${b.paid ? '✓' : ''}</button>
@@ -1284,12 +1290,12 @@ function txHTML(t) {
   </div>`;
 }
 
-function ordinal(n) {
-  const s = ['th','st','nd','rd'], v = n%100;
-  return n + (s[(v-20)%10]||s[v]||s[0]);
+function render() {
+  renderDashboard();
+  renderBills();
+  renderCheckbook();
 }
 
-// Close modals on overlay click
 document.getElementById('override-modal').addEventListener('click', function(e) {
   if (e.target === this) closeOverrideModal();
 });
@@ -1299,18 +1305,17 @@ document.getElementById('reset-modal').addEventListener('click', function(e) {
 document.getElementById('tx-modal').addEventListener('click', function(e) {
   if (e.target === this) closeTxModal();
 });
-// Enter key on tx form
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.getElementById('tx-modal').classList.contains('open')) saveTransaction();
 });
 
-// ── EXPOSE FUNCTIONS TO GLOBAL SCOPE ──────────────────────────────────
 Object.assign(window, {
   showPage, openTxModal, closeTxModal, saveTransaction,
   toggleBill, deleteBill, toggleAddBill, addBill, deleteTx,
   setBalance, confirmReset, closeResetModal, doReset,
   toggleBillsPeriod, updateActiveCheck, updatePaychecks,
-  switchPeriod, shiftPeriod, openOverrideModal, closeOverrideModal, saveOverride, clearOverride,
+  shiftPeriod, jumpToCurrentPeriod, closeOutPeriod,
+  openOverrideModal, closeOverrideModal, saveOverride, clearOverride,
 });
 
 render();
