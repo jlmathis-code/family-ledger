@@ -441,6 +441,8 @@ const KRISTIN_ANCHOR = new Date(2026, 2, 26);
 const BIWEEKLY_MS = 14 * 24 * 60 * 60 * 1000;
 const FIRST_PERIOD_START = new Date(2026, 2, 20);
 
+const PERIOD_SCHEMA_VERSION = 2;
+
 let state = null;
 let dbRef = null;
 let activePeriod = 0;
@@ -506,20 +508,45 @@ function DEFAULT_STATE() {
     joshCheck: 0,
     kristinCheck: 0,
     disabilityCheck: 0,
-    bills: DEFAULT_BILLS.map(b => ({ ...b, id: uid(), paid: false })),
+    bills: DEFAULT_BILLS.map(b => ({ ...b, id: uid() })),
     transactions: [],
-    currentPeriodStart: isoDate(FIRST_PERIOD_START)
+    currentPeriodStart: isoDate(FIRST_PERIOD_START),
+    periodSchemaVersion: PERIOD_SCHEMA_VERSION
   };
 }
 
 function normalizeState(data) {
   const base = DEFAULT_STATE();
+
+  let bills = Array.isArray(data?.bills) ? data.bills : base.bills;
+  let transactions = Array.isArray(data?.transactions) ? data.transactions : [];
+  let currentPeriodStart = data?.currentPeriodStart || base.currentPeriodStart;
+
+  // One-time migration:
+  // Reset the open period back to the intended Mar 20 anchor and clear any
+  // period-scoped checkmarks that may have been saved against the wrong window.
+  if (data?.periodSchemaVersion !== PERIOD_SCHEMA_VERSION) {
+    currentPeriodStart = base.currentPeriodStart;
+    bills = bills.map(b => {
+      const copy = { ...b };
+      delete copy.lastPaidPeriodStart;
+      delete copy.paid;
+      return copy;
+    });
+    transactions = transactions.map(t => {
+      const copy = { ...t };
+      delete copy.lastClearedPeriodStart;
+      return copy;
+    });
+  }
+
   return {
     ...base,
     ...data,
-    bills: Array.isArray(data?.bills) ? data.bills : base.bills,
-    transactions: Array.isArray(data?.transactions) ? data.transactions : [],
-    currentPeriodStart: data?.currentPeriodStart || base.currentPeriodStart
+    bills,
+    transactions,
+    currentPeriodStart,
+    periodSchemaVersion: PERIOD_SCHEMA_VERSION
   };
 }
 
@@ -822,7 +849,7 @@ function renderDashboard() {
   balanceEl.textContent = money(state.balance);
   balanceEl.className = 'balance-amount ' + (state.balance >= 0 ? 'positive' : 'negative');
 
-  document.getElementById('period-title').textContent = isCurrent ? 'Current Open Period' : `Future Period ${activePeriod}`;
+  document.getElementById('period-title').textContent = isCurrent ? 'Current Open Period' : `Future Period ${activePeriod + 1}`;
   document.getElementById('period-date').textContent = fmtRange(viewed.period.start, viewed.period.end);
   document.getElementById('period-mode-label').textContent = isCurrent ? 'CURRENT OPEN PERIOD' : 'FUTURE VIEW ONLY';
   document.getElementById('period-mode-label').className = 'period-mode' + (isCurrent ? '' : ' viewing');
@@ -870,7 +897,7 @@ function renderDashboard() {
     ? viewed.items.bills
         .sort((a,b) => a.resolvedDate - b.resolvedDate || a.name.localeCompare(b.name))
         .map(b => `<div class="bill-item">
-          <button class="bill-check" onclick="toggleBill('${b.id}')">✓</button>
+          <button class="bill-check" onclick="toggleBill('${b.id}')"></button>
           <div class="bill-info">
             <div class="bill-name">${b.name}</div>
             <div class="bill-due">${b.resolvedDate.toLocaleDateString('en-US', { month:'short', day:'numeric' })}</div>
