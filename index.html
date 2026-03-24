@@ -614,8 +614,19 @@ function getPeriodNumbers(periodIndexRelative) {
   }
 
   const items = getPeriodItems(period);
-  const beforePaydayBills = items.bills.filter(b => b.resolvedDate < period.end).reduce((s, b) => s + Number(b.amount || 0), 0);
-  const beforePaydayMisc = items.misc.filter(t => t.resolvedDate < period.end).reduce((s, t) => s + Number(t.amount || 0), 0);
+
+  // Opening card runs from Mar 20 up to the next payday, so Safe Now should
+  // subtract anything due before that next payday (the end of the window).
+  // All later cards have their paycheck on the START of the window, so Safe Now
+  // should only subtract items dated before that start-of-period payday.
+  const safeNowCutoffDate = period.paycheckWho ? period.start : period.end;
+
+  const beforePaydayBills = items.bills
+    .filter(b => b.resolvedDate < safeNowCutoffDate)
+    .reduce((s, b) => s + Number(b.amount || 0), 0);
+  const beforePaydayMisc = items.misc
+    .filter(t => t.resolvedDate < safeNowCutoffDate)
+    .reduce((s, t) => s + Number(t.amount || 0), 0);
   const allBills = items.bills.reduce((s, b) => s + Number(b.amount || 0), 0);
   const allMisc = items.misc.reduce((s, t) => s + Number(t.amount || 0), 0);
   const paycheck = period.paycheckKey ? Number(state[period.paycheckKey] || 0) : 0;
@@ -625,6 +636,7 @@ function getPeriodNumbers(periodIndexRelative) {
     items,
     baseAmount,
     paycheck,
+    safeNowCutoffDate,
     beforePaydayBills,
     beforePaydayMisc,
     allBills,
@@ -880,7 +892,10 @@ function renderDashboard() {
   const safeNowEl = document.getElementById('stat-safe-now');
   safeNowEl.textContent = (viewed.safeNow < 0 ? '-' : '') + money(viewed.safeNow);
   safeNowEl.className = 'safe-amount ' + (viewed.safeNow > 200 ? 'positive' : viewed.safeNow > 0 ? 'warn' : 'danger');
-  document.getElementById('safe-now-label').textContent = `Base minus bills/misc dated before ${viewed.period.nextPaydayWho} payday ${viewed.period.end.toLocaleDateString('en-US', { month:'short', day:'numeric' })}`;
+  const safeNowPaydayLabel = viewed.period.paycheckWho
+    ? `${viewed.period.paycheckWho} payday ${viewed.safeNowCutoffDate.toLocaleDateString('en-US', { month:'short', day:'numeric' })}`
+    : `${viewed.period.nextPaydayWho} payday ${viewed.safeNowCutoffDate.toLocaleDateString('en-US', { month:'short', day:'numeric' })}`;
+  document.getElementById('safe-now-label').textContent = `Base minus bills/misc dated before ${safeNowPaydayLabel}`;
   document.getElementById('safe-now-breakdown').textContent =
     `${money(viewed.baseAmount)} - ${money(viewed.beforePaydayBills)} bills - ${money(viewed.beforePaydayMisc)} misc`;
 
