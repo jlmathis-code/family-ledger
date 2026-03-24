@@ -178,6 +178,8 @@
   .bill-due, .tx-date { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
   .bill-amount, .tx-amount { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 600; flex-shrink: 0; }
   .bill-amount, .tx-amount { color: var(--red); }
+  .bill-edit-day { width:64px; padding:6px 8px; border-radius:10px; border:1px solid var(--border); background:#fff; font-family:'DM Mono', monospace; font-size:12px; }
+  .bill-edit-wrap { display:flex; align-items:center; gap:8px; flex-shrink:0; }
   .bill-delete, .tx-delete {
     background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; padding: 4px;
   }
@@ -322,9 +324,11 @@
 <div id="page-bills" class="page">
   <div class="month-card">
     <div><strong>Bill list</strong></div>
-    <div class="inline-note">These bills stay in the running list. The dashboard decides which period they fall into based on their due day.</div>
+    <div class="inline-note">These bills stay in the running list. You can change the due day anytime here, and the dashboard will immediately recalculate which period they land in.</div>
   </div>
   <button class="add-btn" onclick="toggleAddBill()">+ Add a Bill</button>
+  <div id="bills-note" style="margin:8px 0 14px;color:var(--text-dim);font-size:13px"></div>
+
   <div class="add-bill-form" id="add-bill-form">
     <div class="form-row">
       <div class="form-group">
@@ -483,12 +487,14 @@ function getPeriods(count = 12) {
   const filtered = paydays.filter(p => p.date >= startOfDay(FIRST_PERIOD_START));
   const periods = [];
   for (let i = 0; i < filtered.length - 1 && periods.length < count; i++) {
+    const isAnchorPeriod = isoDate(filtered[i].date) === isoDate(FIRST_PERIOD_START);
     periods.push({
       index: i,
       start: filtered[i].date,
       end: filtered[i + 1].date,
-      paydayWho: filtered[i + 1].who,
-      paycheckKey: filtered[i + 1].checkKey
+      paycheckWho: isAnchorPeriod ? null : filtered[i].who,
+      paycheckKey: isAnchorPeriod ? null : filtered[i].checkKey,
+      nextPaydayWho: filtered[i + 1].who
     });
   }
   return periods;
@@ -546,11 +552,21 @@ function resolveDateInPeriod(dayNum, period) {
   return d;
 }
 
+function isBillPaidForPeriod(bill, period) {
+  return bill.lastPaidPeriodStart && bill.lastPaidPeriodStart === isoDate(period.start);
+}
+
+function isTxClearedForPeriod(tx, period) {
+  return tx.lastClearedPeriodStart && tx.lastClearedPeriodStart === isoDate(period.start);
+}
+
 function getPeriodItems(period) {
   const bills = (state.bills || []).map(b => ({ ...b, resolvedDate: resolveDateInPeriod(b.due, period) }))
-    .filter(b => b.resolvedDate && b.resolvedDate >= period.start && b.resolvedDate <= period.end);
+    .filter(b => b.resolvedDate && b.resolvedDate >= period.start && b.resolvedDate <= period.end)
+    .filter(b => !isBillPaidForPeriod(b, period));
   const misc = (state.transactions || []).map(t => ({ ...t, resolvedDate: resolveDateInPeriod(t.day, period) }))
-    .filter(t => t.resolvedDate && t.resolvedDate >= period.start && t.resolvedDate <= period.end);
+    .filter(t => t.resolvedDate && t.resolvedDate >= period.start && t.resolvedDate <= period.end)
+    .filter(t => !isTxClearedForPeriod(t, period));
   return { bills, misc };
 }
 
@@ -575,7 +591,7 @@ function getPeriodNumbers(periodIndexRelative) {
   const beforePaydayMisc = items.misc.filter(t => t.resolvedDate < period.end).reduce((s, t) => s + Number(t.amount || 0), 0);
   const allBills = items.bills.reduce((s, b) => s + Number(b.amount || 0), 0);
   const allMisc = items.misc.reduce((s, t) => s + Number(t.amount || 0), 0);
-  const paycheck = Number(state[period.paycheckKey] || 0);
+  const paycheck = period.paycheckKey ? Number(state[period.paycheckKey] || 0) : 0;
 
   return {
     period,
@@ -682,16 +698,39 @@ function closeOutPeriod() {
 
 function updateActiveCheck() {
   const viewed = getViewedPeriod();
-  if (!viewed) return;
+  if (!viewed || !viewed.paycheckKey) return;
   state[viewed.paycheckKey] = parseFloat(document.getElementById('active-check').value) || 0;
   saveState();
   renderDashboard();
 }
 
 function toggleBill(id) {
+  const period = getViewedPeriod();
   const bill = state.bills.find(b => b.id === id);
-  if (!bill) return;
-  bill.paid = !bill.paid;
+  if (!bill || !period) return;
+  if (isBillPaidForPeriod(bill, period)) bill.lastPaidPeriodStart = null;
+  else bill.lastPaidPeriodStart = isoDate(period.start);
+  saveState();
+  render();
+}
+function toggleTx(id) {
+  const period = getViewedPeriod();
+  const tx = state.transactions.find(t => t.id === id);
+  if (!tx || !period) return;
+  if (isTxClearedForPeriod(tx, period)) tx.lastClearedPeriodStart = null;
+  else tx.lastClearedPeriodStart = isoDate(period.start);
+  saveState();
+  render();
+}
+function updateBillDue(id, value) {
+  const bill = state.bills.find(b => b.id === id);
+  const due = parseInt(value, 10);
+  if (!bill || isNaN(due) || due < 1 || due > 31) {
+    renderBills();
+    return;
+  }
+  bill.due = due;
+  state.bills.sort((a,b) => (a.due||99) - (b.due||99) || a.name.localeCompare(b.name));
   saveState();
   render();
 }
@@ -742,22 +781,28 @@ function deleteTx(id) {
 }
 
 function billHTML(b) {
-  return `<div class="bill-item ${b.paid ? 'paid' : ''}">
-    <button class="bill-check" onclick="toggleBill('${b.id}')">${b.paid ? '✓' : ''}</button>
+  const currentPeriod = getVisiblePeriods()[0];
+  const paidNow = currentPeriod ? isBillPaidForPeriod(b, currentPeriod) : false;
+  return `<div class="bill-item ${paidNow ? 'paid' : ''}">
+    <button class="bill-check" onclick="toggleBill('${b.id}')">${paidNow ? '✓' : ''}</button>
     <div class="bill-info">
       <div class="bill-name">${b.name}</div>
-      <div class="bill-due">Due the ${ordinal(b.due)}</div>
+      <div class="bill-due">Due day</div>
     </div>
-    <div class="bill-amount">${money(b.amount)}</div>
-    <button class="bill-delete" onclick="deleteBill('${b.id}')">✕</button>
+    <div class="bill-edit-wrap">
+      <input class="bill-edit-day" type="number" min="1" max="31" value="${b.due}" onchange="updateBillDue('${b.id}', this.value)">
+      <div class="bill-amount">${money(b.amount)}</div>
+      <button class="bill-delete" onclick="deleteBill('${b.id}')">✕</button>
+    </div>
   </div>`;
 }
 
-function txHTML(t, resolvedDate) {
+function txHTML(t, resolvedDate, clearable = false, cleared = false) {
   const label = resolvedDate
     ? resolvedDate.toLocaleDateString('en-US', { month:'short', day:'numeric' })
     : `Day ${t.day}`;
-  return `<div class="tx-item">
+  return `<div class="tx-item ${cleared ? 'paid' : ''}">
+    ${clearable ? `<button class="bill-check" onclick="toggleTx('${t.id}')">${cleared ? '✓' : ''}</button>` : ''}
     <div class="tx-info">
       <div class="tx-desc">${t.desc}</div>
       <div class="tx-date">${label}</div>
@@ -781,13 +826,19 @@ function renderDashboard() {
   document.getElementById('period-date').textContent = fmtRange(viewed.period.start, viewed.period.end);
   document.getElementById('period-mode-label').textContent = isCurrent ? 'CURRENT OPEN PERIOD' : 'FUTURE VIEW ONLY';
   document.getElementById('period-mode-label').className = 'period-mode' + (isCurrent ? '' : ' viewing');
-  document.getElementById('period-payday-line').textContent = `Payday: ${viewed.period.paydayWho} on ${viewed.period.end.toLocaleDateString('en-US', { month:'short', day:'numeric' })}`;
+  document.getElementById('period-payday-line').textContent = viewed.period.paycheckWho
+    ? `Paycheck in this card: ${viewed.period.paycheckWho} on ${viewed.period.start.toLocaleDateString('en-US', { month:'short', day:'numeric' })}`
+    : `This opening card starts after your Mar 20 payday. Next payday is ${viewed.period.nextPaydayWho} on ${viewed.period.end.toLocaleDateString('en-US', { month:'short', day:'numeric' })}`;
   document.getElementById('period-base-line').textContent = activePeriod === 0
     ? `Base amount: current balance ${money(viewed.baseAmount)}`
     : `Base amount: prior period's After Payday ${money(viewed.baseAmount)}`;
 
-  document.getElementById('paycheck-card-label').textContent = `${viewed.period.paydayWho}'s paycheck for ${viewed.period.end.toLocaleDateString('en-US', { month:'short', day:'numeric' })}`;
-  document.getElementById('active-check').value = viewed.paycheck || '';
+  document.getElementById('paycheck-card-label').textContent = viewed.period.paycheckWho
+    ? `${viewed.period.paycheckWho}'s paycheck for ${viewed.period.start.toLocaleDateString('en-US', { month:'short', day:'numeric' })}`
+    : `No paycheck added on this opening card`;
+  document.getElementById('active-check').value = viewed.period.paycheckWho ? (viewed.paycheck || '') : '';
+  document.getElementById('active-check').disabled = !viewed.period.paycheckWho;
+  document.getElementById('active-check').placeholder = viewed.period.paycheckWho ? '0.00' : 'Starts after your payday';
 
   const prevBtn = document.getElementById('period-prev');
   const nextBtn = document.getElementById('period-next');
@@ -802,42 +853,50 @@ function renderDashboard() {
   const safeNowEl = document.getElementById('stat-safe-now');
   safeNowEl.textContent = (viewed.safeNow < 0 ? '-' : '') + money(viewed.safeNow);
   safeNowEl.className = 'safe-amount ' + (viewed.safeNow > 200 ? 'positive' : viewed.safeNow > 0 ? 'warn' : 'danger');
-  document.getElementById('safe-now-label').textContent = `Base minus bills/misc dated before payday ${viewed.period.end.toLocaleDateString('en-US', { month:'short', day:'numeric' })}`;
+  document.getElementById('safe-now-label').textContent = `Base minus bills/misc dated before ${viewed.period.nextPaydayWho} payday ${viewed.period.end.toLocaleDateString('en-US', { month:'short', day:'numeric' })}`;
   document.getElementById('safe-now-breakdown').textContent =
     `${money(viewed.baseAmount)} - ${money(viewed.beforePaydayBills)} bills - ${money(viewed.beforePaydayMisc)} misc`;
 
   const safeAfterEl = document.getElementById('stat-safe-after');
   safeAfterEl.textContent = (viewed.afterPayday < 0 ? '-' : '') + money(viewed.afterPayday);
   safeAfterEl.className = 'safe-amount ' + (viewed.afterPayday > 200 ? 'positive' : viewed.afterPayday > 0 ? 'warn' : 'danger');
-  document.getElementById('safe-after-label').textContent = 'Base + paycheck - all bills/misc this period';
+  document.getElementById('safe-after-label').textContent = viewed.period.paycheckWho
+    ? 'Base + paycheck - all bills/misc this period'
+    : 'Base - all bills/misc this opening period';
   document.getElementById('safe-after-breakdown').textContent =
     `${money(viewed.baseAmount)} + ${money(viewed.paycheck)} paycheck - ${money(viewed.allBills)} bills - ${money(viewed.allMisc)} misc`;
 
   const billList = viewed.items.bills.length
     ? viewed.items.bills
         .sort((a,b) => a.resolvedDate - b.resolvedDate || a.name.localeCompare(b.name))
-        .map(b => `<div class="bill-item ${b.paid ? 'paid' : ''}">
-          <button class="bill-check" onclick="toggleBill('${b.id}')">${b.paid ? '✓' : ''}</button>
+        .map(b => `<div class="bill-item">
+          <button class="bill-check" onclick="toggleBill('${b.id}')">✓</button>
           <div class="bill-info">
             <div class="bill-name">${b.name}</div>
             <div class="bill-due">${b.resolvedDate.toLocaleDateString('en-US', { month:'short', day:'numeric' })}</div>
           </div>
-          <div class="bill-amount">${money(b.amount)}</div>
+          <div class="bill-edit-wrap" style="margin-left:auto;gap:8px;align-items:center">
+            <input class="bill-edit-day" type="number" min="1" max="31" value="${b.due}" onchange="updateBillDue('${b.id}', this.value)">
+            <div class="bill-amount">${money(b.amount)}</div>
+          </div>
         </div>`).join('')
     : '<div class="empty">No bills in this period.</div>';
 
   const miscList = viewed.items.misc.length
     ? viewed.items.misc
         .sort((a,b) => a.resolvedDate - b.resolvedDate || a.desc.localeCompare(b.desc))
-        .map(t => txHTML(t, t.resolvedDate)).join('')
+        .map(t => txHTML(t, t.resolvedDate, true, isTxClearedForPeriod(t, viewed.period))).join('')
     : '<div class="empty">No misc expenses in this period.</div>';
 
   document.getElementById('dashboard-bills-list').innerHTML = billList;
   document.getElementById('dashboard-misc-list').innerHTML = miscList;
-  document.getElementById('unpaid-count').textContent = `${viewed.items.bills.length + viewed.items.misc.length} item(s)`;
+  document.getElementById('unpaid-count').textContent = `${viewed.items.bills.length + viewed.items.misc.length} open item(s)`;
 }
 
 function renderBills() {
+  const currentPeriod = getVisiblePeriods()[0];
+  const currentLabel = document.getElementById('bills-note');
+  if (currentLabel && currentPeriod) currentLabel.textContent = `Checking a bill here marks it paid for ${fmtRange(currentPeriod.start, currentPeriod.end)} only.`;
   document.getElementById('bills-list').innerHTML = (state.bills || [])
     .slice()
     .sort((a,b) => (a.due||99) - (b.due||99) || a.name.localeCompare(b.name))
@@ -859,7 +918,7 @@ document.addEventListener('keydown', e => {
 Object.assign(window, {
   showPage, shiftPeriod, jumpToCurrentPeriod, closeOutPeriod,
   updateActiveCheck, setBalance, toggleAddBill, addBill,
-  toggleBill, deleteBill, openTxModal, closeTxModal,
+  toggleBill, toggleTx, updateBillDue, deleteBill, openTxModal, closeTxModal,
   saveTransaction, deleteTx
 });
 
